@@ -1,0 +1,59 @@
+.main{
+  /* background-color: #202020; */
+  font-family: "Verdana", sans-serif;
+  width: 100%;
+  height: 100%;
+}
+
+
+table{
+  border-collapse: collapse;
+  width: 100%;
+}
+
+
+table, th, tr, td{
+  /* color: whitesmoke; */
+  /* border: solid grey 2px; */
+  padding: 8px;
+  margin: 0 !important;
+}
+
+th, td {
+    border: 1px solid #ddd;
+}
+
+h1 {
+  /* color: whitesmoke; */
+}
+
+th {
+    background-color: #404040;
+    color: white;
+}
+
+tr:hover {background-color: gainsboro;}
+
+.ok-button {
+  background-color: #073980;
+  margin-top: 30px;
+  padding: 20px 40px;
+  border-radius: 10px;
+  color: white;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  grid-column-gap: 10px;
+  margin-top: 40px;
+
+}
+
+.grid-item{
+  background-color: #e7f0fe;
+  padding-top: 20px;
+  padding-bottom: 60px;
+  border-radius: 10px;
+  border: solid 2px #073980;
+}
