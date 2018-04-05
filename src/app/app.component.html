@@ -8,7 +8,7 @@
 </div>
 
 <div style="text-align:center" *ngIf="!showTable">
-  <img width="300" alt="Angular Logo" src="../assets/General_Motors.png">
+  <img class="gm-logo" width="300" alt="GM Logo" src="{{gmLogo}}">
 
   <br />
   <div class="grid-container">
@@ -32,6 +32,10 @@
   <br />
   <button class="ok-button" (click)="clickedOK()">
     <u>GO</u>
+  </button>
+  <br />
+  <button class="ok-button" (click)="clickedDemo()">
+    Demo Table...
   </button>
 </div>
 
