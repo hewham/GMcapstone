@@ -1,74 +1,61 @@
-<!--The content below is only a placeholder and can be replaced.-->
 <div class="main">
 
-<div style="text-align:center">
-  <h1>
-    GM CapStone Project
-  </h1>
-</div>
-
-<div style="text-align:center" *ngIf="!showTable">
-  <img class="gm-logo" width="300" alt="GM Logo" src="{{gmLogo}}">
-
-  <br />
-  <div class="grid-container">
-    <div class="grid-item">
-      Drop Parts CSV File Here
-      <br />
-      <input id="partsFile" type="file" />
-    </div>
-    <div class="grid-item">
-      Drop Routes CSV File Here
-      <br />
-      <input id="routesFile" type="file" />
-    </div>
-    <div class="grid-item">
-      Drop Containers CSV File Here
-      <br />
-      <input id="containersFile" type="file" />
-    </div>
+  <div style="text-align:center">
+    <button class="back-button" (click)="clickedBack()" *ngIf="showTable">
+      Back to Uploads
+    </button>
+    <h1>
+      GM CapStone
+    </h1>
   </div>
 
-  <br />
-  <button class="ok-button" (click)="clickedOK()">
-    <u>GO</u>
-  </button>
-  <br />
-  <button class="ok-button" (click)="clickedDemo()">
-    Demo Table...
-  </button>
+  <div style="text-align:center" *ngIf="!showTable">
+    <img class="gm-logo" width="300" alt="GM Logo" src="{{gmLogo}}">
+
+    <br />
+    <div class="grid-container">
+      <div class="grid-item">
+        Upload Parts CSV File Here
+        <br />
+        <input id="partsFile" type="file" />
+        <!-- <file-drop headertext="Drop Parts Here" (onFileDrop)="dropped($event)"
+        (onFileOver)="fileOver($event)" (onFileLeave)="fileLeave($event)">
+        </file-drop> -->
+      </div>
+      <div class="grid-item">
+        Upload Routes CSV File Here
+        <br />
+        <input id="routesFile" type="file" />
+      </div>
+      <div class="grid-item">
+        Upload Containers CSV File Here
+        <br />
+        <input id="containersFile" type="file" />
+      </div>
+    </div>
+
+    <br />
+    <button class="ok-button" (click)="clickedOK()">
+      <u>GO</u>
+    </button>
+    <br />
+    <button class="ok-button" (click)="clickedDemo()">
+      Demo Table...
+    </button>
+
+  </div>
+
+  <div *ngIf="showTable">
+    <table>
+      <tr> <th>Supplier</th> <th>Best Frequency</th> <th>Best Cost</th> <th>Originial Frequency</th> <th>Original Cost</th> <th> Cost Difference</th> </tr>
+
+      <tr><td>detroit</td><td>2456.3</td><td>4324</td><td>8494</td></tr>
+
+      <tr><td>ypsi</td><td>1234.23</td><td>5356.34</td><td>7549.98</td></tr>
+
+      <tr><td>ann arbor</td><td>4237.5</td><td>8599.2</td><td>5574.3</td></tr>
+    </table>
+  </div>
+
+
 </div>
-
-<div *ngIf="showTable">
-  <table>
-    <tr> <th>Supplier</th> <th>Best Frequency</th> <th>Best Cost</th> <th>Originial Frequency</th> <th>Original Cost</th> <th> Cost Difference</th> </tr>
-
-    <tr><td>detroit</td><td>2456.3</td><td>4324</td><td>8494</td></tr>
-
-    <tr><td>ypsi</td><td>1234.23</td><td>5356.34</td><td>7549.98</td></tr>
-
-    <tr><td>ann arbor</td><td>4237.5</td><td>8599.2</td><td>5574.3</td></tr>
-  </table>
-</div>
-
-
-</div>
-
-
-
-
-
-
-
-<!-- <h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://github.com/angular/angular-cli/wiki">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul> -->

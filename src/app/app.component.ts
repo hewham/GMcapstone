@@ -1,5 +1,9 @@
 import { Component } from '@angular/core';
 
+import { PapaParseService } from 'ngx-papaparse';
+import { UploadEvent, UploadFile } from 'ngx-file-drop';
+
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -8,7 +12,6 @@ import { Component } from '@angular/core';
 export class AppComponent {
 // Papa = require("papaparse");
 Papa: any;
-
 
 showTable: boolean = false;
 
@@ -72,9 +75,28 @@ plantWorkingDays = 6
 
 ManufacTime = 2
 
+loadFlag: boolean = false;
+
+
+  constructor(private papa: PapaParseService) {
+    let csvData = '"Hello","World!"';
+
+    this.papa.parse(csvData,{
+        complete: (results, file) => {
+            console.log('Parsed: ', results, file);
+        }
+    });
+  }
+
+
+
+
 
   clickedDemo(){
     this.showTable = true;
+  }
+  clickedBack(){
+    this.showTable = false;
   }
 
 
@@ -115,7 +137,7 @@ ManufacTime = 2
   populateParts(partsFile, routesFile, containersFile) {
     console.log("in populateParts...");
     var self = this;
-    this.Papa.parse(partsFile, {
+    this.papa.parse(partsFile, {
     	complete: function(results) {
     		// console.log("Finished:", results.data);
         self.parts = results.data;
@@ -127,7 +149,7 @@ ManufacTime = 2
   populateRoutes(partsFile, routesFile, containersFile) {
     console.log("in populateRoutes...");
     var self = this;
-    this.Papa.parse(routesFile, {
+    this.papa.parse(routesFile, {
     	complete: function(results) {
     		console.log("Finished:", results.data);
         self.routes = results.data;
@@ -139,7 +161,7 @@ ManufacTime = 2
   populateContainers(partsFile, routesFile, containersFile){
     console.log("in populateContainers...");
     var self = this;
-    this.Papa.parse(containersFile, {
+    this.papa.parse(containersFile, {
       complete: function(results) {
         console.log("Finished:", results.data);
         self.containers = results.data;
@@ -148,21 +170,15 @@ ManufacTime = 2
     });
   }
 
-
+  main1() {
+    this.loadFlag = true;
+  }
 
   main() {
     console.log("In main()...");
     console.log("PARTS: ",this.parts);
     console.log("ROUTES: ",this.routes);
-
-
-
-
-
-
-
-
-
+    console.log("CONTAINERS: ",this.containers);
 
 
     //////////////////////////////METRICS WE NEED TO LOOKUP BY ROW//////////////////////

@@ -28,7 +28,7 @@ h1 {
 }
 
 th {
-    background-color: #404040;
+    background-color: #073980;
     color: white;
 }
 
@@ -44,6 +44,15 @@ tr:hover {background-color: gainsboro;}
   padding: 20px 40px;
   border-radius: 10px;
   color: white;
+}
+.back-button {
+  position: absolute;
+  background-color: #073980;
+  border-radius: 10px;
+  color: white;
+  top: 10px;
+  left: 10px;
+  padding: 20px 40px;
 }
 
 .grid-container {
