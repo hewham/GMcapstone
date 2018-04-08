@@ -441,6 +441,9 @@ test(){
           console.log("_____TL FINALCOST_____");
           console.log(this.finalCost(part, 3));
         }
+
+
+
         else if (this.routeDict[part[this.routeID]][this.mode] == "MR"){
           // console.log("GOT MR")
         }
