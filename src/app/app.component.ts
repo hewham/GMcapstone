@@ -15,15 +15,17 @@ Papa: any;
 
 showTable: boolean = false;
 
-routeLegend = []
-partLegend = []
-containerLegend = []
+routesLegend = []
+partsLegend = []
+containersLegend = []
 routes = []
 parts = []
 containers = []
 
 // Dictionary for looking up route type by route number, ex: "MR" for MilkRun
 routeDict = {}
+
+test = [1,2,3,4,5];
 
 // routeDict  Legend::
 routeID = 0
@@ -64,7 +66,7 @@ lnCube(week){
 // Containers Legend:::
 containerName = 0
 containerRE = 1
-containerPrice = 2
+containerPriceIndex = 2
 
 // Dollar weight per
 HandlingCost = 1.15
@@ -174,225 +176,236 @@ loadFlag: boolean = false;
     this.loadFlag = true;
   }
 
+  //////////////////////////////METRICS WE NEED TO LOOKUP BY ROW//////////////////////
+  //ONE WAY PLANT DISTANCE - Miles
+  getMiles(part){
+      let i = 0;
+      for (let route of this.routes)
+        if (route[this.routeID] == part[this.routeID]){
+          break;
+        }
+        i++;
+      return parseFloat(this.routes[i][this.miles])
+    }
+  //AVG WEEKLY PARTS REQUIRED done
+  averageQtyWk(part){
+      let total = 0;
+      for (let i=0; i<20; i++){
+        if (part[this.qtyWk(i)].isalpha() == false){
+          total += parseFloat(part[this.qtyWk(i)]);
+        }
+      }
+      return total/20;
+    }
+  //MANUFACTURING TIME
+
+  //PEAK WEEKLY PARTS REQUIRED
+  maxQtyWk(part){
+      let max = 0;
+      for (let i=0; i<20; i++){
+        if (this.qtyWk(i) > max){
+          max = this.qtyWk(i);
+        }
+      }
+      return max
+    }
+  //NUMBER OF PARTS
+  numOfParts(route){
+      let num = 0;
+      for (let part of this.parts){
+        if (part[this.routeID] == route[this.routeID]){
+          num++;
+        }
+      }
+      return num;
+    }
+  //COST PER PART
+  // part[piecePrice]
+
+  //FUEL RATE
+  fuelRate = 2.559;
+
+  // GAS PRICE PER ROUTE
+  gasCost(miles){
+    return (miles/this.mpg) * this.fuelRate;
+  }
+
+  containerPrice(part){
+    for (let container of this.containers){
+      if (part[this.containerNameInPart] == container[this.containerName]){
+        return container[this.containerPriceIndex];
+      }else{
+        return 0;
+      }
+    }
+  }
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+  finalCost(part, frequency){ //final cost to be used w/ frequency
+    let cost = this.freight(part, frequency) + this.floorSpace(part, frequency) + this.invHolding(part, frequency) + this.contCapital(part, frequency);
+    return cost;
+  }
+
+
+
+
+
+
+
+
+  ////////////////////////////////// 4 MAIN COST CALCULATIONS ////////////////////////////////
+  freight(part, frequency){
+    return (this.getMiles(part)/this.mpg) * this.fuelRate;
+  }
+
+  floorSpace(part, frequency){
+      let space = parseFloat(part[this.qtyWk(1)]) / parseFloat(part[this.stdPack]) / parseFloat(frequency);
+      if (frequency % this.plantWorkingDays != 0){
+        space = Math.ceil(space*1.1);
+      }
+      return space;
+  }
+  invHolding(part, frequency){
+      // I = 0.15 * numberParts * costPerPart
+      // I = 0.15 * floorSpace(part, frequency) * costPerPart
+      // return I
+      return 5;
+  }
+
+  contCapital(part, frequency){
+    let containerNum = this.contPlant(part,frequency) + this.contSupplier(part,frequency) + this.contTransit(part, frequency);
+    let contCapital = containerNum * this.containerPrice(part);
+    return contCapital;
+  }
+
+
+
+
+
+
+
+
+
+  ////////////////////////////////////////// PLANT CALC ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  contPlant(part, frequency){
+    return this.ShipSize(part, frequency) + this.PlantSafetyStock(part, frequency);
+  }
+
+  PlantSafetyStock(part, frequency){
+    return Math.min(2, this.PlantVolumeCalc(part, frequency));
+  }
+
+  PlantVolumeCalc(part, frequency){
+    return this.PlantMin(part) + this.PartVolatility(part) + this.IntHandling(part) + 1;
+  }
+
+  PlantMin(part){
+    let expedTrans = (this.getMiles(part)/50)/this.ManufacTime;
+    return Math.min(this.TransTime(part), expedTrans) * this.ContainersPerDay(part);
+  }
+
+  PartVolatility(part){
+    let PeakPartDemandPerDay = this.maxQtyWk(part)/6;
+    return (PeakPartDemandPerDay - this.AvgPartDemand(part))/(parseFloat(part[this.stdPack]));
+  }
+
+  IntHandling(part){
+    let IntHandlingTime = 4/this.ManufacTime;
+    return IntHandlingTime * this.ContainersPerDay(part);
+  }
+
+
+
+
+
+
+
+
+
+  ////////////////////////////////SUPPLIER CALC //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  contSupplier(part, frequency){
+      return this.ShipSize(part, frequency) + this.SupplierSafetyStock(part, frequency);
+    }
+
+  SupplierSafetyStock(part,frequency){
+    //////check w/ supply chain, as contperday is part of shipsize calc???
+    return Math.min(2,(this.ContainersPerDay(part) + this.ShipSize(part, frequency) + 1));
+  }
+
+
+
+
+
+
+
+
+
+  ////////////////////////// TRANSIT CALC //////////////
+  contTransit(part, frequency){
+     //EQ GOOD
+    return this.ShipSize(part,frequency) * Math.ceil(frequency*this.TransTime(part))+1;
+  }
+
+  ShipSize(part,frequency){
+     //EQ GOOD
+    return (this.ContainersPerDay(part))/frequency;
+  }
+
+  ContainersPerDay(part){
+     //EQ GOOD
+    return this.AvgPartDemand(part)/(parseFloat(part[this.stdPack]));
+  }
+
+  AvgPartDemand(part){
+    //EQ GOOD
+    return (this.averageQtyWk(part)/6);
+  }
+
+  TransTime(part){
+    return this.TruckTime(part) + this.MxBorder(part) + this.ODC(part);
+  }
+
+  TruckTime(part){
+     //EQ GOOD
+    return (2 + ((2*this.getMiles(part))/50))/10;
+  }
+
+
+
+
+  MxBorder(part){
+     //EQ GOOD
+      //if departure is in US:
+      //    return 3
+      //else:
+          return 0
+  }
+
+  ODC(part){
+      //if type is 'CON':
+      //   return 1.5
+      //else:
+          return 0
+  }
+
   main() {
     console.log("In main()...");
     console.log("PARTS: ",this.parts);
     console.log("ROUTES: ",this.routes);
     console.log("CONTAINERS: ",this.containers);
 
+    this.partsLegend = this.parts[0];
+    this.parts.splice(0, 1);
+    this.routesLegend = this.routes[0];
+    this.routes.splice(0, 1);
+    this.containersLegend = this.containers[0];
+    this.containers.splice(0, 1);
 
-    //////////////////////////////METRICS WE NEED TO LOOKUP BY ROW//////////////////////
-    //ONE WAY PLANT DISTANCE - Miles
-    function getMiles(part){
-        let i = 0;
-        for (let route of this.routes)
-          if (route[this.routeID] == part[this.routeID]){
-            break;
-          }
-          i++;
-        return parseFloat(this.routes[i][this.miles])
-      }
-    //AVG WEEKLY PARTS REQUIRED done
-    function averageQtyWk(part){
-        let total = 0;
-        for (let i=0; i<20; i++){
-          if (part[this.qtyWk(i)].isalpha() == false){
-            total += parseFloat(part[this.qtyWk(i)]);
-          }
-        }
-        return total/20;
-      }
-    //MANUFACTURING TIME
-
-    //PEAK WEEKLY PARTS REQUIRED
-    function maxQtyWk(part){
-        let max = 0;
-        for (let i=0; i<20; i++){
-          if (this.qtyWk(i) > max){
-            max = this.qtyWk(i);
-          }
-        }
-        return max
-      }
-    //NUMBER OF PARTS
-    function numOfParts(route){
-        let num = 0;
-        for (let part of this.parts){
-          if (part[this.routeID] == route[this.routeID]){
-            num++;
-          }
-        }
-        return num;
-      }
-    //COST PER PART
-    // part[piecePrice]
-
-    //FUEL RATE
-    var fuelRate = 2.559;
-
-    // GAS PRICE PER ROUTE
-    function gasCost(miles){
-      return (miles/this.mpg) * fuelRate;
+    for (let route of this.routes){
+      this.routeDict[route[0]] = route;
     }
-
-    function containerPrice(part){
-      for (let container of this.containers){
-        if (part[this.containerNameInPart] == container[this.this.containerName]){
-          return container[this.containerPrice];
-        }else{
-          return 0;
-        }
-      }
-    }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    function finalCost(part, frequency){ //final cost to be used w/ frequency
-      let cost = freight(part, frequency) + floorSpace(part, frequency) + invHolding(part, frequency) + contCapital(part, frequency);
-      return cost;
-    }
-
-
-
-
-
-
-
-
-    ////////////////////////////////// 4 MAIN COST CALCULATIONS ////////////////////////////////
-    function freight(part, frequency){
-      return (getMiles(part)/this.mpg) * fuelRate;
-    }
-
-    function floorSpace(part, frequency){
-        let space = parseFloat(part[this.qtyWk(1)]) / parseFloat(part[this.stdPack]) / parseFloat(frequency);
-        if (frequency % this.plantWorkingDays != 0){
-          space = Math.ceil(space*1.1);
-        }
-        return space;
-    }
-    function invHolding(part, frequency){
-        // I = 0.15 * numberParts * costPerPart
-        // I = 0.15 * floorSpace(part, frequency) * costPerPart
-        // return I
-        return 5;
-    }
-
-    function contCapital(part, frequency){
-      let containerNum = contPlant(part,frequency) + contSupplier(part,frequency) + contTransit(part, frequency);
-      let contCapital = containerNum * containerPrice(part);
-      return contCapital;
-    }
-
-
-
-
-
-
-
-
-
-    ////////////////////////////////////////// PLANT CALC ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    function contPlant(part, frequency){
-      return ShipSize(part, frequency) + PlantSafetyStock(part, frequency);
-    }
-
-    function PlantSafetyStock(part, frequency){
-      return Math.min(2, PlantVolumeCalc(part, frequency));
-    }
-
-    function PlantVolumeCalc(part, frequency){
-      return PlantMin(part) + PartVolatility(part) + IntHandling(part) + 1;
-    }
-
-    function PlantMin(part){
-      let expedTrans = (getMiles(part)/50)/this.ManufacTime;
-      return Math.min(TransTime(part), expedTrans) * ContainersPerDay(part);
-    }
-
-    function PartVolatility(part){
-      let PeakPartDemandPerDay = maxQtyWk(part)/6;
-      return (PeakPartDemandPerDay - AvgPartDemand(part))/(parseFloat(part[this.stdPack]));
-    }
-
-    function IntHandling(part){
-      let IntHandlingTime = 4/this.ManufacTime;
-      return IntHandlingTime * ContainersPerDay(part);
-    }
-
-
-
-
-
-
-
-
-
-    ////////////////////////////////SUPPLIER CALC //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    function contSupplier(part, frequency){
-        return ShipSize(part, frequency) + SupplierSafetyStock(part, frequency);
-      }
-
-    function SupplierSafetyStock(part,frequency){
-      //////check w/ supply chain, as contperday is part of shipsize calc???
-      return Math.min(2,(ContainersPerDay(part) + ShipSize(part, frequency) + 1));
-    }
-
-
-
-
-
-
-
-
-
-    ////////////////////////// TRANSIT CALC //////////////
-    function contTransit(part, frequency){
-       //EQ GOOD
-      return ShipSize(part,frequency) * Math.ceil(frequency*TransTime(part))+1;
-    }
-
-    function ShipSize(part,frequency){
-       //EQ GOOD
-      return (ContainersPerDay(part))/frequency;
-    }
-
-    function ContainersPerDay(part){
-       //EQ GOOD
-      return AvgPartDemand(part)/(parseFloat(part[this.stdPack]));
-    }
-
-    function AvgPartDemand(part){
-      //EQ GOOD
-      return (averageQtyWk(part)/6);
-    }
-
-    function TransTime(part){
-      return TruckTime(part) + MxBorder(part) + ODC(part);
-    }
-
-    function TruckTime(part){
-       //EQ GOOD
-      return (2 + ((2*getMiles(part))/50))/10;
-    }
-
-
-
-
-    function MxBorder(part){
-       //EQ GOOD
-        //if departure is in US:
-        //    return 3
-        //else:
-            return 0
-    }
-
-    function ODC(part){
-        //if type is 'CON':
-        //   return 1.5
-        //else:
-            return 0
-    }
+    console.log("DICT: ",this.routeDict);
     ///////////////////////////////////
 
 
@@ -415,10 +428,16 @@ loadFlag: boolean = false;
     //     console.log(part)
     //     j += 1
 
-
+    var i = 0;
     for (let part of this.parts){
+      if(i!=0){
+
+      // console.log(part);
+
         if (this.routeDict[part[this.routeID]][this.mode] == "TL"){
-          // console.log(finalCost(part, 3))
+          console.log('');
+          console.log("_____TL FINALCOST_____");
+          console.log(this.finalCost(part, 3));
         }
         else if (this.routeDict[part[this.routeID]][this.mode] == "MR"){
           // console.log("GOT MR")
@@ -429,6 +448,8 @@ loadFlag: boolean = false;
         else if (this.routeDict[part[this.routeID]][this.mode] == "ITL"){
           // console.log("GOT ITL")
         }
+      }
+      i++;
     }
 
   }
