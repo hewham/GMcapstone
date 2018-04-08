@@ -79,18 +79,12 @@ loadFlag: boolean = false;
 
 
   constructor(private papa: PapaParseService) {
-    let csvData = '"Hello","World!"';
 
-    this.papa.parse(csvData,{
-        complete: (results, file) => {
-            console.log('Parsed: ', results, file);
-        }
-    });
   }
 
 
 test(){
-  console.log(isNaN("12,567.34"));
+
 
 }
 
@@ -102,6 +96,68 @@ test(){
   clickedBack(){
     this.showTable = false;
   }
+
+
+
+
+
+
+
+  /////////////////////////////// NO UPLOAD POPULATE (FOR TESTING) ///////////
+
+
+  clickedOKNoUpload() {
+      this.populatePartsNoUpload();
+  }
+
+  populatePartsNoUpload() {
+    console.log("in populateParts...");
+    var self = this;
+    this.papa.parse("../assets/CSV_files/silao_data_set_parts.csv", {
+      download: true,
+      complete: function(results) {
+        // console.log("Finished:", results.data);
+        self.parts = results.data;
+        self.populateRoutesNoUpload();
+      }
+    });
+  }
+
+  populateRoutesNoUpload() {
+    console.log("in populateRoutes...");
+    var self = this;
+    this.papa.parse("../assets/CSV_files/silao_data_set_routes.csv", {
+      download: true,
+      complete: function(results) {
+        console.log("Finished:", results.data);
+        self.routes = results.data;
+        self.populateContainersNoUpload();
+      }
+    });
+  }
+
+  populateContainersNoUpload(){
+    console.log("in populateContainers...");
+    var self = this;
+    this.papa.parse("../assets/CSV_files/silao_data_set_containers.csv", {
+      download: true,
+      complete: function(results) {
+        console.log("Finished:", results.data);
+        self.containers = results.data;
+        self.main();
+      }
+    });
+  }
+
+
+///////////////////////////////   END NO UPLOAD POPULATE (FOR TESTING) ///////
+
+
+
+
+///////////////////////////  POPULATE ////////////////////////////////
+
+
 
 
   clickedOK() {
@@ -174,9 +230,19 @@ test(){
     });
   }
 
-  main1() {
-    this.loadFlag = true;
-  }
+///////////////////////////   END POPULATE ////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
 
   //////////////////////////////METRICS WE NEED TO LOOKUP BY ROW//////////////////////
   //ONE WAY PLANT DISTANCE - Miles
