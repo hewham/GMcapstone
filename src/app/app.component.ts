@@ -25,8 +25,6 @@ containers = []
 // Dictionary for looking up route type by route number, ex: "MR" for MilkRun
 routeDict = {}
 
-test = [1,2,3,4,5];
-
 // routeDict  Legend::
 routeID = 0
 plannedLaneRate = 2
@@ -91,6 +89,10 @@ loadFlag: boolean = false;
   }
 
 
+test(){
+  console.log(isNaN("12,567.34"));
+
+}
 
 
 
@@ -191,7 +193,7 @@ loadFlag: boolean = false;
   averageQtyWk(part){
       let total = 0;
       for (let i=0; i<20; i++){
-        if (part[this.qtyWk(i)].isalpha() == false){
+        if (isNaN(part[this.qtyWk(i)]) == false){
           total += parseFloat(part[this.qtyWk(i)]);
         }
       }
