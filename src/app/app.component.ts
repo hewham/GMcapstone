@@ -239,7 +239,7 @@ test(){
 
 
 
-FrequencyArray(supplier){
+averageFrequency(supplier){
 
 
   for(let part of this.parts){
