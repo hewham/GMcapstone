@@ -14,13 +14,14 @@ export class AppComponent {
 Papa: any;
 
 showTable: boolean = false;
-
+fuelRate = 2.559;
 routesLegend = []
 partsLegend = []
 containersLegend = []
 routes = []
 parts = []
 containers = []
+outputMatrix = [];
 
 // Dictionary for looking up route type by route number, ex: "MR" for MilkRun
 routeDict = {}
@@ -238,7 +239,26 @@ test(){
 
 
 
+FrequencyArray(supplier){
 
+
+  for(let part of this.parts){
+    if(this.parts[this.routeID] == supplier[this.routeID]){
+    //  for(let  )
+  //  }
+  }
+
+
+  let freqAry = [];
+  let origFreq = supplier[this.laneFreq];
+
+
+  let partAvgFrequency = [];
+
+
+
+  }
+}
 
 
 
@@ -255,6 +275,16 @@ test(){
         i++;
       return parseFloat(this.routes[i][this.miles])
     }
+
+  getMilesSupplier(Supplier){
+    let i = 0;
+    for (let route of this.routes){
+      if (route[this.routeID] == Supplier[this.routeID]){
+        return parseFloat(this.routes[i][this.miles]);
+      }
+      i++;
+    }
+  }
   //AVG WEEKLY PARTS REQUIRED done
   averageQtyWk(part){
       let total = 0;
@@ -290,8 +320,6 @@ test(){
   //COST PER PART
   // part[piecePrice]
 
-  //FUEL RATE
-  fuelRate = 2.559;
 
   // GAS PRICE PER ROUTE
   gasCost(miles){
@@ -310,35 +338,59 @@ test(){
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  finalCost(part, frequency){ //final cost to be used w/ frequency
-    let cost = this.freight(part, frequency) + this.floorSpace(part, frequency) + this.invHolding(part, frequency) + this.contCapital(part, frequency);
-    return cost;
+  finalSupplierCost(supplier, frequency){ //final cost to be used w/ frequency
+
+    let supplierCost = 0;
+    for(let part of this.parts){
+      if(this.routeDict[part[this.routeID]][this.mode] == "TL" && this.parts[this.routeID] == supplier[this.routeID]){
+        supplierCost += this.finalPartCost(part, frequency);
+      }
+    }
+    var freightCost = this.freight(supplier, frequency);
+
+    supplierCost += freightCost;
+
+    return supplierCost;
+
+
   }
 
-
-
-
-
-
-
-
+  finalPartCost(part, frequency){
+    let cost = this.floorSpace(part, frequency) + this.invHolding(part, frequency) + this.contCapital(part, frequency);
+    return cost;
+  }
   ////////////////////////////////// 4 MAIN COST CALCULATIONS ////////////////////////////////
-  freight(part, frequency){
-    return (this.getMiles(part)/this.mpg) * this.fuelRate;
+  freight(supplier, frequency){
+    var freightCost = ((this.getMilesSupplier(supplier)/this.mpg) * this.fuelRate + supplier[this.plannedLaneRate]) * frequency;
+    return freightCost;
   }
 
   floorSpace(part, frequency){
-      let space = parseFloat(part[this.qtyWk(1)]) / parseFloat(part[this.stdPack]) / parseFloat(frequency);
+      let containerNumber = parseFloat(part[this.averageQtyWk(part)]) /  parseFloat(frequency) /parseFloat(part[this.stdPack]);
+
       if (frequency % this.plantWorkingDays != 0){
-        space = Math.ceil(space*1.1);
+        containerNumber = containerNumber*1.1;
+        containerNumber = Math.ceil(containerNumber);
       }
-      return space;
+
+      var contInStack = 15/(parseFloat(part[this.contH])/12);
+      var sqFt = (parseFloat(part[this.contL])/12)*(parseFloat(part[this.contW])/12);
+      var numberOfStacks = Math.floor(containerNumber / contInStack);
+
+      var floorSpace = numberOfStacks*sqFt*2.5*47.57;
+      return floorSpace;
   }
+
   invHolding(part, frequency){
-      // I = 0.15 * numberParts * costPerPart
-      // I = 0.15 * floorSpace(part, frequency) * costPerPart
-      // return I
-      return 5;
+    let invHoldingCost = parseFloat(part[this.averageQtyWk(part)]) /  parseFloat(frequency) / parseFloat(part[this.stdPack]);
+
+    if (frequency % this.plantWorkingDays != 0){
+      invHoldingCost = invHoldingCost*1.1;
+    }
+
+    invHoldingCost = invHoldingCost * parseFloat(part[this.stdPack]) * part[this.piecePrice] * 0.15;
+
+    return invHoldingCost;
   }
 
   contCapital(part, frequency){
@@ -444,17 +496,21 @@ test(){
 
   MxBorder(part){
      //EQ GOOD
-      //if departure is in US:
-      //    return 3
-      //else:
-          return 0
+    if(part[this.drawArea] == "MEXICO"){
+      return 0;
+    }
+    else{
+      return 3;
+    }
   }
 
   ODC(part){
-      //if type is 'CON':
-      //   return 1.5
-      //else:
-          return 0
+      if( this.routeDict[part[this.routeID]][this.mode] == "CON" || this.routeDict[part[this.routeID]][this.mode] == "ODC"){
+        return 1.5;
+      }
+      else{
+        return 0;
+      }
   }
 
   main() {
@@ -496,54 +552,43 @@ test(){
     //     console.log(part)
     //     j += 1
 
-    for(let supplier of supplierList){
-
-  let row = [];
-  row.push(supplier);   //Supplier Code
-  let supplierCost = 0
-  let costArrayforMax = [];
-    for(let freq=1; freq < 10; freq++){
-      for(let part of this.parts){
-        if(this.routeDict[part[this.routeID]][this.mode] == "TL" && this.parts[this.routeID] == supplier){
-          supplierCost += this.finalCost(part, freq);
-        }
-      }
-      costArrayforMax.push(supplierCost);
-    }
-
-  row.push(supplier);   //Supplier Code
-  row.push(3);                 //Frequency for best cost
-  console.log(costArrayforMax);
-  console.log(Math.max(costArrayforMax));
-  row.push(Math.max(costArrayforMax));      //Best Cost
-  row.push()                   //Original Frequency
-  row.push()                   //Original Cost
-  row.push()                   //Cost Difference
-
-  outputTable.push(row);
-}
+    //row.push(supplier);   //Supplier Code
+    //row.push(3);                 //Frequency for best cost
+    //console.log(costArrayforMax);
+    //console.log(Math.max(costArrayforMax));
+    //row.push(Math.max(costArrayforMax));      //Best Cost
+    //row.push()                   //Original Frequency
+    //row.push()                   //Original Cost
+    //row.push()                   //Cost Difference
 
 
-      // console.log(part);
-for(part of parts){
-        if (this.routeDict[part[this.routeID]][this.mode] == "TL"){
-          console.log('');
-          console.log("_____TL FINALCOST_____");
-          console.log(this.finalCost(part, 3));
+let pushRow = [];
+let currentCost = 0;
+let frequencyRangeArray = [];
+let CostArray = [];
+
+for(let supplier of this.routes){
+        if (supplier[this.mode] == "TL"){
+            pushRow.push(supplier[this.routeID]); //routeID
+            pushRow.push(supplier[this.laneFreq]); //Original Frequency
+            currentCost = this.finalSupplierCost(supplier, supplier[this.laneFreq]);
+            pushRow.push(currentCost); //Original Cost
+
+
+            pushRow.push()
+
         }
 
-
-
-        else if (this.routeDict[part[this.routeID]][this.mode] == "MR"){
+        else if (supplier[this.mode] == "MR"){
           // console.log("GOT MR")
         }
-        else if (this.routeDict[part[this.routeID]][this.mode] == "CON"){
+        else if (supplier[this.mode] == "CON"){
            // console.log("GOT CON")
         }
-        else if (this.routeDict[part[this.routeID]][this.mode] == "ITL"){
+        else if (supplier[this.mode] == "ITL"){
           // console.log("GOT ITL")
         }
-      }
+}
 
 }
 
