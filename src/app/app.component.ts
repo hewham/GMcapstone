@@ -22,6 +22,7 @@ routes = []
 parts = []
 containers = []
 outputMatrix = [];
+incompleteDataSuppliers = []
 
 // Dictionary for looking up route type by route number, ex: "MR" for MilkRun
 routeDict = {}
@@ -45,21 +46,21 @@ state = 5
 postalCode = 6
 partID = 7
 containerNameInPart = 8
-stdPack = 9
-contL = 10
-contW = 11
-contH = 12
-contT = 13
-re = 14
+stdPack = 11
+contL = 12
+contW = 13
+contH = 14
+contT = 15
+re = 16
 // Following functions give legend index for qtyWk, wtUtil, and lnCube
 qtyWk(week){
-  return week + 14
+  return week + 17;
 }
 wtUtil(week){
-  return (week*2)-1 + 34
+  return (week*2) + 38 - 1;
 }
 lnCube(week){
-  return (week*2)-1 + 35
+  return (week*2) + 38;
 }
 
 // Containers Legend:::
@@ -112,7 +113,7 @@ test(){
   }
 
   populatePartsNoUpload() {
-    console.log("in populateParts...");
+    //console.log("in populateParts...");
     var self = this;
     this.papa.parse("../assets/CSV_files/silao_data_set_parts.csv", {
       download: true,
@@ -125,12 +126,12 @@ test(){
   }
 
   populateRoutesNoUpload() {
-    console.log("in populateRoutes...");
+    //console.log("in populateRoutes...");
     var self = this;
     this.papa.parse("../assets/CSV_files/silao_data_set_routes.csv", {
       download: true,
       complete: function(results) {
-        console.log("Finished:", results.data);
+        //console.log("Finished:", results.data);
         self.routes = results.data;
         self.populateContainersNoUpload();
       }
@@ -138,12 +139,12 @@ test(){
   }
 
   populateContainersNoUpload(){
-    console.log("in populateContainers...");
+    //console.log("in populateContainers...");
     var self = this;
     this.papa.parse("../assets/CSV_files/silao_data_set_containers.csv", {
       download: true,
       complete: function(results) {
-        console.log("Finished:", results.data);
+        //console.log("Finished:", results.data);
         self.containers = results.data;
         self.main();
       }
@@ -162,7 +163,7 @@ test(){
 
 
   clickedOK() {
-    console.log("OK WAS CLICKED");
+    //console.log("OK WAS CLICKED");
     // this.showTable = true;
 
     var partsFile: any;
@@ -196,11 +197,11 @@ test(){
 
 
   populateParts(partsFile, routesFile, containersFile) {
-    console.log("in populateParts...");
+    //console.log("in populateParts...");
     var self = this;
     this.papa.parse(partsFile, {
     	complete: function(results) {
-    		// console.log("Finished:", results.data);
+    		//console.log("Finished:", results.data);
         self.parts = results.data;
         self.populateRoutes(partsFile, routesFile, containersFile);
     	}
@@ -208,11 +209,11 @@ test(){
   }
 
   populateRoutes(partsFile, routesFile, containersFile) {
-    console.log("in populateRoutes...");
+    //console.log("in populateRoutes...");
     var self = this;
     this.papa.parse(routesFile, {
     	complete: function(results) {
-    		console.log("Finished:", results.data);
+    		//console.log("Finished:", results.data);
         self.routes = results.data;
         self.populateContainers(partsFile, routesFile, containersFile);
     	}
@@ -220,11 +221,11 @@ test(){
   }
 
   populateContainers(partsFile, routesFile, containersFile){
-    console.log("in populateContainers...");
+    //console.log("in populateContainers...");
     var self = this;
     this.papa.parse(containersFile, {
       complete: function(results) {
-        console.log("Finished:", results.data);
+        //console.log("Finished:", results.data);
         self.containers = results.data;
         self.main();
       }
@@ -239,30 +240,28 @@ test(){
 
 
 
-averageFrequency(supplier){
-
-
-  for(let part of this.parts){
-    if(this.parts[this.routeID] == supplier[this.routeID]){
-    //  for(let  )
-  //  }
-  }
-
-
+averageFrequency(supplier){ //WORKS
   let freqAry = [];
-  let origFreq = supplier[this.laneFreq];
-
-
-  let partAvgFrequency = [];
-
-
-
+  let totalpartFrequency = 0;
+  for(let part of this.parts){
+    if(part[this.routeID] == supplier[this.routeID]){
+      totalpartFrequency = 0;
+      for(let i = 0; i < 20; i++){
+        totalpartFrequency += parseFloat(part[this.lnCube(i)]);
+      }
+      totalpartFrequency = totalpartFrequency/20;
+      freqAry.push(totalpartFrequency);
+    }
   }
+  let supplierFrequencyTotal = 0;
+  let count = 0;
+  for(let partavgfreq of freqAry){
+    count += 1;
+    supplierFrequencyTotal += partavgfreq;
+  }
+  let averageFrequency = supplierFrequencyTotal / count;
+  return averageFrequency;
 }
-
-
-
-
 
   //////////////////////////////METRICS WE NEED TO LOOKUP BY ROW//////////////////////
   //ONE WAY PLANT DISTANCE - Miles
@@ -286,7 +285,7 @@ averageFrequency(supplier){
     }
   }
   //AVG WEEKLY PARTS REQUIRED done
-  averageQtyWk(part){
+  averageQtyWk(part){ //WORKS
       let total = 0;
       for (let i=0; i<20; i++){
         if (isNaN(part[this.qtyWk(i)]) == false){
@@ -329,7 +328,7 @@ averageFrequency(supplier){
   containerPrice(part){
     for (let container of this.containers){
       if (part[this.containerNameInPart] == container[this.containerName]){
-        return container[this.containerPriceIndex];
+        return parseFloat(container[this.containerPriceIndex]);
       }else{
         return 0;
       }
@@ -341,32 +340,40 @@ averageFrequency(supplier){
   finalSupplierCost(supplier, frequency){ //final cost to be used w/ frequency
 
     let supplierCost = 0;
+    let partCount = 0;
     for(let part of this.parts){
-      if(this.routeDict[part[this.routeID]][this.mode] == "TL" && this.parts[this.routeID] == supplier[this.routeID]){
+      partCount++;
+
+      if(this.routeDict[part[this.routeID]][this.mode] == "TL" && part[this.routeID] == supplier[this.routeID]){
         supplierCost += this.finalPartCost(part, frequency);
       }
     }
     var freightCost = this.freight(supplier, frequency);
 
     supplierCost += freightCost;
-
-    return supplierCost;
-
-
+    //console.log(supplier, frequency, supplierCost);
+    return Math.ceil(supplierCost);
   }
 
   finalPartCost(part, frequency){
+    //console.log(part);
+    //console.log("floor space: ", this.floorSpace(part, frequency));
+    //console.log("invHolding: ",this.invHolding(part, frequency));
+    //console.log("contCapital: ", this.contCapital(part, frequency));
+    //console.log("contCapital: ",this.contCapital(part, frequency));
     let cost = this.floorSpace(part, frequency) + this.invHolding(part, frequency) + this.contCapital(part, frequency);
+
     return cost;
   }
   ////////////////////////////////// 4 MAIN COST CALCULATIONS ////////////////////////////////
-  freight(supplier, frequency){
-    var freightCost = ((this.getMilesSupplier(supplier)/this.mpg) * this.fuelRate + supplier[this.plannedLaneRate]) * frequency;
+  freight(supplier, frequency){//DONE
+    var freightCost = ((parseFloat(supplier[this.miles])/this.mpg) * this.fuelRate + parseFloat(supplier[this.plannedLaneRate])) * frequency;
+    //console.log("freightCost: ", freightCost );
     return freightCost;
   }
 
-  floorSpace(part, frequency){
-      let containerNumber = parseFloat(part[this.averageQtyWk(part)]) /  parseFloat(frequency) /parseFloat(part[this.stdPack]);
+  floorSpace(part, frequency){//DONE
+      let containerNumber = this.averageQtyWk(part) /  parseFloat(frequency) /parseFloat(part[this.stdPack]);
 
       if (frequency % this.plantWorkingDays != 0){
         containerNumber = containerNumber*1.1;
@@ -381,20 +388,22 @@ averageFrequency(supplier){
       return floorSpace;
   }
 
-  invHolding(part, frequency){
-    let invHoldingCost = parseFloat(part[this.averageQtyWk(part)]) /  parseFloat(frequency) / parseFloat(part[this.stdPack]);
+  invHolding(part, frequency){//DONE
+    let invHoldingCost = this.averageQtyWk(part) /  parseFloat(frequency) / parseFloat(part[this.stdPack]);
 
     if (frequency % this.plantWorkingDays != 0){
       invHoldingCost = invHoldingCost*1.1;
     }
-
-    invHoldingCost = invHoldingCost * parseFloat(part[this.stdPack]) * part[this.piecePrice] * 0.15;
-
+    invHoldingCost = invHoldingCost * parseFloat(part[this.stdPack]) * parseFloat(part[this.piecePrice]) * 0.15;
     return invHoldingCost;
   }
 
-  contCapital(part, frequency){
+  contCapital(part, frequency){//DONE
     let containerNum = this.contPlant(part,frequency) + this.contSupplier(part,frequency) + this.contTransit(part, frequency);
+    //console.log("contPlant: ", this.contPlant(part, frequency));
+    //console.log("contSupplier: ", this.contSupplier(part, frequency));
+    //console.log("contTransit: ", this.contTransit(part, frequency));
+    //console.log("container Price: ", this.containerPrice(part));
     let contCapital = containerNum * this.containerPrice(part);
     return contCapital;
   }
@@ -496,7 +505,7 @@ averageFrequency(supplier){
 
   MxBorder(part){
      //EQ GOOD
-    if(part[this.drawArea] == "MEXICO"){
+    if(part[this.drawArea].trim() == "MEXICO"){
       return 0;
     }
     else{
@@ -514,69 +523,99 @@ averageFrequency(supplier){
   }
 
   main() {
-    console.log("In main()...");
+    //console.log("In main()...");
     console.log("PARTS: ",this.parts);
-    console.log("ROUTES: ",this.routes);
-    console.log("CONTAINERS: ",this.containers);
+    //console.log("ROUTES: ",this.routes);
+    //console.log("CONTAINERS: ",this.containers);
 
     this.partsLegend = this.parts[0];
     this.parts.splice(0, 1);
+    this.parts.splice(2301, 1);
+    for (let part of this.parts){// getting rid of commas, still N/As or -
+      for(let col = this.qtyWk(0); col < this.qtyWk(20); col++){
+      //console.log(part[col]);
+        part[col] = part[col].replace(",", "");
+      }
+    }
     this.routesLegend = this.routes[0];
     this.routes.splice(0, 1);
     this.containersLegend = this.containers[0];
     this.containers.splice(0, 1);
-
-    for (let route of this.routes){
+    for( let cont of this.containers){//splicing , and $ from containerCost, and changing expendable to 0
+      cont[this.containerPriceIndex] = cont[this.containerPriceIndex].replace("Expendable", "0");
+      cont[this.containerPriceIndex] = cont[this.containerPriceIndex].replace("$", "");
+      cont[this.containerPriceIndex] = cont[this.containerPriceIndex].replace(",", "");
+    }
+    for (let route of this.routes){//initializing route Dict
       this.routeDict[route[0]] = route;
     }
-    console.log("DICT: ",this.routeDict);
-    ///////////////////////////////////
-
-
-
-
-
-
-
-
-    // j = 0
-    // for part in parts:
-    //     i = 0
-    //     for field in part:
-    //         if i > 16 and part[i].strip() != "-":
-    //             part[i] = field.strip().replace(',','')
-    //         elif part[i].strip() == "-":
-    //             parts.pop(j)
-    //             break
-    //         i += 1
-    //     console.log(part)
-    //     j += 1
-
-    //row.push(supplier);   //Supplier Code
-    //row.push(3);                 //Frequency for best cost
-    //console.log(costArrayforMax);
-    //console.log(Math.max(costArrayforMax));
-    //row.push(Math.max(costArrayforMax));      //Best Cost
-    //row.push()                   //Original Frequency
-    //row.push()                   //Original Cost
-    //row.push()                   //Cost Difference
-
 
 let pushRow = [];
 let currentCost = 0;
-let frequencyRangeArray = [];
+
 let CostArray = [];
+let avgFreq = 0;
+let originalFrequency = 0;
+let bestCost = 0;
+let bestFreq = 0;
 
 for(let supplier of this.routes){
+  let pushRow = [];
+  let currentCost = 0;
+
+  let CostArray = [];
+  let avgFreq = 0;
+  let originalFrequency = 0;
+  let bestCost = 0;
+  let bestFreq = 0;
+
         if (supplier[this.mode] == "TL"){
             pushRow.push(supplier[this.routeID]); //routeID
-            pushRow.push(supplier[this.laneFreq]); //Original Frequency
+
+            originalFrequency = supplier[this.laneFreq];
+
             currentCost = this.finalSupplierCost(supplier, supplier[this.laneFreq]);
+            if(isNaN(currentCost)){
+              this.incompleteDataSuppliers.push(supplier[this.routeID]);
+              continue;
+            }
             pushRow.push(currentCost); //Original Cost
+            pushRow.push(originalFrequency); //Original Frequency
 
+            let frequencyRangeDict = {};
+            let frequencyRangeAry = [];
 
-            pushRow.push()
+            avgFreq = Math.ceil(this.averageFrequency(supplier));
+            if( avgFreq < originalFrequency){
+              let temp = avgFreq;
+              avgFreq = originalFrequency;
+              originalFrequency = temp;
+            }
+            for(let i = originalFrequency; i <= avgFreq; i++){
+              frequencyRangeDict[(this.finalSupplierCost(supplier, i))] = i;
+              frequencyRangeAry.push(this.finalSupplierCost(supplier, i));
+            }
+            frequencyRangeAry = frequencyRangeAry.sort(function(a, b){return b - a});
 
+            for(let j = 0; j<3; j++){
+              if(frequencyRangeAry.length > 0){
+                let minCost = frequencyRangeAry.pop();
+                let minFreq = frequencyRangeDict[minCost];
+                pushRow.push(minCost); //Minimum Cost
+                pushRow.push(minFreq); //Minimum frequency
+                let costDiff = currentCost - minCost;
+                pushRow.push(costDiff);  //Cost Difference
+              }
+              else{
+                pushRow.push("");
+                pushRow.push("");
+                pushRow.push("");
+              }
+            }
+
+            this.outputMatrix.push(pushRow);
+            //console.log(pushRow);
+            //break;
         }
 
         else if (supplier[this.mode] == "MR"){
@@ -588,8 +627,9 @@ for(let supplier of this.routes){
         else if (supplier[this.mode] == "ITL"){
           // console.log("GOT ITL")
         }
-}
-
+      }
+console.log(this.outputMatrix);
+console.log(this.incompleteDataSuppliers); 
 }
 
 
