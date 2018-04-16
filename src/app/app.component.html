@@ -52,7 +52,34 @@
 
   </div>
 
-  <div *ngIf="showTable">
+  <div *ngIf="showTable && !demo">
+
+    <table>
+      <tr> <th>Route ID</th> <th>Current Cost</th> <th>Current Frequency</th> <th>Lowest Cost</th> <th>Lowest Frequency</th> <th>Cost Difference</th> </tr>
+
+      <tr *ngFor="let row of outputMatrix">
+        <td>{{row[0]}}</td>
+        <td>{{row[1] | currency:0}}</td>
+        <td>{{row[2]}}</td>
+        <td>{{row[3] | currency}}</td>
+        <td>{{row[4]}}</td>
+        <td>
+          <div *ngIf="row[3] < row[1]" style="color:green">
+            {{row[5] | currency}}
+          </div>
+          <div *ngIf="row[3] > row[1]" style="color:red">
+            {{row[5] | currency}}
+          </div>
+          <div *ngIf="row[3] == row[1]" style="color:grey">
+            $0
+          </div>
+        </td>
+      </tr>
+
+    </table>
+  </div>
+
+  <div *ngIf="showTable && demo">
     <table>
       <tr> <th>Supplier</th> <th>Best Frequency</th> <th>Best Cost</th> <th>Originial Frequency</th> <th>Original Cost</th> <th> Cost Difference</th> </tr>
 

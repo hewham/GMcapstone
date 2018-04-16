@@ -13,7 +13,6 @@ export class AppComponent {
 // Papa = require("papaparse");
 Papa: any;
 
-showTable: boolean = false;
 fuelRate = 2.559;
 routesLegend = []
 partsLegend = []
@@ -78,6 +77,8 @@ plantWorkingDays = 6
 ManufacTime = 2
 
 loadFlag: boolean = false;
+demo: boolean = false;
+showTable: boolean = false;
 
 
   constructor(private papa: PapaParseService) {
@@ -94,9 +95,11 @@ test(){
 
   clickedDemo(){
     this.showTable = true;
+    this.demo = true;
   }
   clickedBack(){
     this.showTable = false;
+    this.demo = false;
   }
 
 
@@ -628,9 +631,13 @@ for(let supplier of this.routes){
           // console.log("GOT ITL")
         }
       }
-console.log(this.outputMatrix);
-console.log(this.incompleteDataSuppliers); 
-}
+
+  console.log(this.outputMatrix);
+  console.log(this.incompleteDataSuppliers);
+
+  this.showTable = true;
+
+} // main() end
 
 
 
