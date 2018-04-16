@@ -22,6 +22,7 @@ routes = []
 parts = []
 containers = []
 outputMatrix = [];
+trueMatrix = [];
 incompleteDataSuppliers = []
 
 // Dictionary for looking up route type by route number, ex: "MR" for MilkRun
@@ -534,7 +535,8 @@ averageFrequency(supplier){ //WORKS
     console.log("PARTS: ",this.parts);
     //console.log("ROUTES: ",this.routes);
     //console.log("CONTAINERS: ",this.containers);
-
+    this.outputMatrix = [];
+    this.trueMatrix = [];
     this.partsLegend = this.parts[0];
     this.parts.splice(0, 1);
     this.parts.splice(2301, 1);
@@ -637,12 +639,38 @@ for(let supplier of this.routes){
       }
 
   console.log(this.outputMatrix);
+  this.trueMatrix = this.outputMatrix
   console.log(this.incompleteDataSuppliers);
 
   this.showTable = true;
   this.loadingFlag = false;
 
 } // main() end
+
+sortByDifference() {
+  let temp = [];
+
+  let tempTrue = [];
+  for(let row of this.trueMatrix){
+    tempTrue.push(row);
+  }
+  for(let rowi of tempTrue){
+    let max = rowi;
+    let j = 0;
+    let index = 0;
+    for(let rowj of tempTrue){
+      if(rowj[5] > max[5]){
+        max = rowj;
+        index = j;
+      }
+      j++;
+    }
+    temp.push(max);
+    tempTrue.splice(index,1);
+  }
+
+  this.outputMatrix = temp;
+}
 
 
 
