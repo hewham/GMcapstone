@@ -78,3 +78,11 @@ tr:hover {background-color: gainsboro;}
   border-radius: 10px;
   border: solid 3px silver;
 }
+
+.loading {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 40%;
+  padding-top: 12%;
+}
