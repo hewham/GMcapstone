@@ -120,7 +120,7 @@ test(){
   populatePartsNoUpload() {
     //console.log("in populateParts...");
     var self = this;
-    this.papa.parse("../assets/CSV_files/silao_data_set_parts.csv", {
+    this.papa.parse("assets/CSV_files/silao_data_set_parts.csv", {
       download: true,
       complete: function(results) {
         // console.log("Finished:", results.data);
@@ -133,7 +133,7 @@ test(){
   populateRoutesNoUpload() {
     //console.log("in populateRoutes...");
     var self = this;
-    this.papa.parse("../assets/CSV_files/silao_data_set_routes.csv", {
+    this.papa.parse("assets/CSV_files/silao_data_set_routes.csv", {
       download: true,
       complete: function(results) {
         //console.log("Finished:", results.data);
@@ -146,7 +146,7 @@ test(){
   populateContainersNoUpload(){
     //console.log("in populateContainers...");
     var self = this;
-    this.papa.parse("../assets/CSV_files/silao_data_set_containers.csv", {
+    this.papa.parse("assets/CSV_files/silao_data_set_containers.csv", {
       download: true,
       complete: function(results) {
         //console.log("Finished:", results.data);
