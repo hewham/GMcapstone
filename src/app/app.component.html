@@ -22,28 +22,29 @@
 
 
   <div style="text-align:center" *ngIf="!showTable && !loadingFlag">
-    <!-- <img class="gm-logo" width="300" alt="GM Logo" src="{{gmLogo}}"> -->
     <img class="gm-logo" width="300" alt="GM Logo" src="assets/gmlogo.png">
 
     <br />
+    <br />
+    DOE FuelRate: $<input type="number" id="fuelrate" class="fuel_input"/>
+    <br />
+
+
     <div class="grid-container">
       <div class="grid-item">
         Upload Parts CSV File Here
         <br />
-        <input id="partsFile" type="file" />
-        <!-- <file-drop headertext="Drop Parts Here" (onFileDrop)="dropped($event)"
-        (onFileOver)="fileOver($event)" (onFileLeave)="fileLeave($event)">
-        </file-drop> -->
+        <input id="partsFile" type="file" class="file_input"/>
       </div>
       <div class="grid-item">
         Upload Routes CSV File Here
         <br />
-        <input id="routesFile" type="file" />
+        <input id="routesFile" type="file" class="file_input"/>
       </div>
       <div class="grid-item">
         Upload Containers CSV File Here
         <br />
-        <input id="containersFile" type="file" />
+        <input id="containersFile" type="file" class="file_input"/>
       </div>
     </div>
 
@@ -58,18 +59,17 @@
     <!-- <br />
     <button class="ok-button" (click)="clickedDemo()">
       Demo Table...
-    </button>
+    </button> -->
     <br />
     <button class="ok-button" (click)="test()">
       test code
-    </button> -->
+    </button>
 
   </div>
 
 
 
   <div *ngIf="loadingFlag">
-    <!-- <mat-spinner mode="indeterminate"></mat-spinner> -->
     <img class="loading" src="assets/loading.gif"/>
   </div>
 
@@ -82,7 +82,8 @@
     <p>Cost savings (3rd best): <span *ngIf="totals[2] > 0" style="color:green">{{totals[2] | currency}}</span><span *ngIf="totals[2] <= 0" style="color:red">{{totals[2] | currency}}</span></p>
 
     <table>
-      <tr> <th>Route ID</th> <th>Current Cost</th> <th>Current $ Frequency</th> <th>Lowest Cost</th> <th>Lowest $ Frequency</th> <th>Cost Difference</th> <th>2nd Lowest Cost</th> <th>2nd Lowest $ Frequency</th> <th>2nd Cost Difference</th> <th>3rd Lowest Cost</th> <th>3rd Lowest $ Frequency</th> <th>3rd Cost Difference</th></tr>
+      <tr> <th class="zeroth">Route ID</th> <th class="zeroth">Current Cost</th> <th class="zeroth">Current $ Frequency</th> <th class="firstth">Lowest Cost</th> <th class="firstth">Lowest $ Frequency</th> <th class="firstth">Cost Difference</th> <th class="secondth">2nd Lowest Cost</th>
+        <th class="secondth">2nd Lowest $ Frequency</th> <th class="secondth">2nd Cost Difference</th> <th class="thirdth">3rd Lowest Cost</th> <th class="thirdth">3rd Lowest $ Frequency</th> <th class="thirdth">3rd Cost Difference</th></tr>
 
       <tr *ngFor="let row of outputMatrix">
         <td>{{row[0]}}</td>

@@ -28,12 +28,29 @@ h1 {
   color: #073980;
 }
 
-th {
+.zeroth {
     background-color: #073980;
     color: white;
 }
+.firstth {
+    background-color: #084191;
+    color: white;
+}
+.secondth {
+    background-color: #094caa;
+    color: white;
+}
+.thirdth {
+    background-color: #0b62da;
+    color: white;
+}
 
-input{
+.fuel_input {
+  font-size: 1em;
+  font-style: bold;
+}
+
+.file_input{
   padding-top: 30px;
 }
 

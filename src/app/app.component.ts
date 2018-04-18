@@ -92,7 +92,6 @@ sorted: boolean = false;
 
 test(){
 
-
 }
 
 
@@ -116,8 +115,31 @@ test(){
 
 
   clickedOKNoUpload() {
+    var fuelRateIsThere: boolean = true;
+    var fuelrate: any;
+    fuelrate = document.getElementById("fuelrate");
+    if(fuelrate.value){
+      this.fuelRate = fuelrate.value;
+      console.log("fuel rate is here")
+    }else{
+      fuelRateIsThere = false;
+      console.log("fuel rate is NOT here")
+    }
+
+    if(!fuelRateIsThere){
+      if (confirm(`You forgot to enter in the DOE fuel rate.
+
+        Would you like to use the default $2.559?`)) {
+          this.loadingFlag = true;
+          this.populatePartsNoUpload();
+      } else {
+          console.log("do nothing");
+      }
+    }else{
       this.loadingFlag = true;
       this.populatePartsNoUpload();
+    }
+
   }
 
   populatePartsNoUpload() {
@@ -184,6 +206,7 @@ test(){
     containersFile = document.getElementById("containersFile");
 
     var allFilesAreThere: boolean = true;
+    var fuelRateIsThere: boolean = true;
     if(!partsFile.files[0]){
       allFilesAreThere = false;
     }
@@ -194,11 +217,31 @@ test(){
       allFilesAreThere = false;
     }
 
+    var fuelrate: any;
+    fuelrate = document.getElementById("fuelrate");
+    if(fuelrate.value){
+      this.fuelRate = fuelrate.value;
+      console.log("fuel rate is here")
+    }else{
+      fuelRateIsThere = false;
+      console.log("fuel rate is NOT here")
+    }
+
 
     if(!allFilesAreThere){
       alert(`You forgot to add a File.
 
         Please add all files and try again!`);
+    }else if(!fuelRateIsThere){
+      if (confirm(`You forgot to enter in the DOE fuel rate.
+
+        Would you like to use the default $2.559?`)) {
+          this.loadingFlag = true;
+          this.populateParts(partsFile.files[0], routesFile.files[0], containersFile.files[0]);
+      } else {
+          console.log("do nothing");
+      }
+
     }else{
       this.loadingFlag = true;
       this.populateParts(partsFile.files[0], routesFile.files[0], containersFile.files[0]);
