@@ -119,7 +119,7 @@ test(){
     var fuelrate: any;
     fuelrate = document.getElementById("fuelrate");
     if(fuelrate.value){
-      this.fuelRate = fuelrate.value;
+      this.fuelRate = parseFloat(fuelrate.value);
       console.log("fuel rate is here")
     }else{
       fuelRateIsThere = false;
@@ -129,7 +129,7 @@ test(){
     if(!fuelRateIsThere){
       if (confirm(`You forgot to enter in the DOE fuel rate.
 
-        'OK' to use the default $2.559.
+        'OK' to use the default $`+String(this.fuelRate)+`.
         'Cancel' to go back and enter one.`)) {
           this.loadingFlag = true;
           this.populatePartsNoUpload();
@@ -221,7 +221,7 @@ test(){
     var fuelrate: any;
     fuelrate = document.getElementById("fuelrate");
     if(fuelrate.value){
-      this.fuelRate = fuelrate.value;
+      this.fuelRate = parseFloat(fuelrate.value);
       console.log("fuel rate is here")
     }else{
       fuelRateIsThere = false;
@@ -236,7 +236,8 @@ test(){
     }else if(!fuelRateIsThere){
       if (confirm(`You forgot to enter in the DOE fuel rate.
 
-        Would you like to use the default $2.559?`)) {
+        'OK' to use the default $`+String(this.fuelRate)+`.
+        'Cancel' to go back and enter one.`)) {
           this.loadingFlag = true;
           this.populateParts(partsFile.files[0], routesFile.files[0], containersFile.files[0]);
       } else {
@@ -423,7 +424,7 @@ averageFrequency(supplier){ //WORKS
   }
   ////////////////////////////////// 4 MAIN COST CALCULATIONS ////////////////////////////////
   freight(supplier, frequency){//DONE + CHECKED
-    let freightCost = ((parseFloat(supplier[this.miles])/this.mpg) * this.fuelRate + parseFloat(supplier[this.plannedLaneRate])) * frequency;
+      let freightCost = ((parseFloat(supplier[this.miles])/this.mpg) * this.fuelRate + parseFloat(supplier[this.plannedLaneRate])) * frequency;
     //console.log("freigt: ", freightCost);
     return freightCost;
   }
@@ -553,8 +554,9 @@ averageFrequency(supplier){ //WORKS
   }
 
   main() {
+    // console.log("using fuelrate: ",this.fuelRate);
     //console.log("In main()...");
-    console.log("PARTS: ",this.parts);
+    // console.log("PARTS: ",this.parts);
     //console.log("ROUTES: ",this.routes);
     //console.log("CONTAINERS: ",this.containers);
     this.populateDistances();
@@ -651,12 +653,13 @@ for(let supplier of this.routes){
         }
     }
 
-  console.log(this.outputMatrix);
+  // console.log(this.outputMatrix);
   this.trueMatrix = this.outputMatrix;
 
   var t1=0;
   var t2=0;
   var t3=0;
+  this.totals = [];
   for(let row of this.trueMatrix){
     t1 += parseFloat(row[5]);
     if(!isNaN(parseFloat(row[8]))){
