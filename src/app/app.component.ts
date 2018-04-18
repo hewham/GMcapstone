@@ -47,7 +47,7 @@ city = 4
 state = 5
 postalCode = 6
 partID = 7
-containerNameInPart = 8
+containerNameInPart = 10
 stdPack = 11
 contL = 12
 contW = 13
@@ -246,10 +246,6 @@ test(){
 
 
 
-
-
-
-
 averageFrequency(supplier){ //WORKS
   let freqAry = [];
   let totalpartFrequency = 0;
@@ -275,14 +271,16 @@ averageFrequency(supplier){ //WORKS
 
   //////////////////////////////METRICS WE NEED TO LOOKUP BY ROW//////////////////////
   //ONE WAY PLANT DISTANCE - Miles
-  getMiles(part){
-      let i = 0;
-      for (let route of this.routes)
+  getMiles(part){// DONE + CHECKED
+    let i = 0;
+    let miles = 0;
+      for (let route of this.routes){
         if (route[this.routeID] == part[this.routeID]){
-          break;
+          miles = parseFloat(this.routes[i][this.miles])
         }
         i++;
-      return parseFloat(this.routes[i][this.miles])
+      }
+      return miles;
     }
 
   getMilesSupplier(Supplier){
@@ -335,14 +333,21 @@ averageFrequency(supplier){ //WORKS
     return (miles/this.mpg) * this.fuelRate;
   }
 
-  containerPrice(part){
+  containerPrice(part){// if is num change to int then check
     for (let container of this.containers){
-      if (part[this.containerNameInPart] == container[this.containerName]){
-        return parseFloat(container[this.containerPriceIndex]);
-      }else{
-        return 0;
+      //console.log(part[this.containerNameInPart]);
+      if(isNaN(part[this.containerNameInPart])){
+        if (part[this.containerNameInPart] == container[this.containerName]){
+          return parseFloat(container[this.containerPriceIndex]);
+        }
+      }
+      else{
+        if(String(parseInt(part[this.containerNameInPart])) == container[this.containerName]){
+          return parseFloat(container[this.containerPriceIndex]);
+        }
       }
     }
+    return 0;
   }
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -361,38 +366,35 @@ averageFrequency(supplier){ //WORKS
     var freightCost = this.freight(supplier, frequency);
 
     supplierCost += freightCost;
-    //console.log(supplier, frequency, supplierCost);
     return Math.ceil(supplierCost);
   }
 
   finalPartCost(part, frequency){
-    //console.log(part);
-    //console.log("floor space: ", this.floorSpace(part, frequency));
-    //console.log("invHolding: ",this.invHolding(part, frequency));
-    //console.log("contCapital: ", this.contCapital(part, frequency));
-    //console.log("contCapital: ",this.contCapital(part, frequency));
+    //console.log("floor: ", this.floorSpace(part, frequency));
+    //     console.log("inv: ", this.invHolding(part, frequency));
+    //        console.log("contCapt: ", this.contCapital(part, frequency));
     let cost = this.floorSpace(part, frequency) + this.invHolding(part, frequency) + this.contCapital(part, frequency);
 
     return cost;
   }
   ////////////////////////////////// 4 MAIN COST CALCULATIONS ////////////////////////////////
-  freight(supplier, frequency){//DONE
-    var freightCost = ((parseFloat(supplier[this.miles])/this.mpg) * this.fuelRate + parseFloat(supplier[this.plannedLaneRate])) * frequency;
-    //console.log("freightCost: ", freightCost );
+  freight(supplier, frequency){//DONE + CHECKED
+    let freightCost = ((parseFloat(supplier[this.miles])/this.mpg) * this.fuelRate + parseFloat(supplier[this.plannedLaneRate])) * frequency;
+    //console.log("freigt: ", freightCost);
     return freightCost;
   }
 
-  floorSpace(part, frequency){//DONE
+  floorSpace(part, frequency){//DONE + CHECKED
       let containerNumber = this.averageQtyWk(part) /  parseFloat(frequency) /parseFloat(part[this.stdPack]);
-
       if (frequency % this.plantWorkingDays != 0){
         containerNumber = containerNumber*1.1;
         containerNumber = Math.ceil(containerNumber);
       }
 
       var contInStack = 15/(parseFloat(part[this.contH])/12);
+
       var sqFt = (parseFloat(part[this.contL])/12)*(parseFloat(part[this.contW])/12);
-      var numberOfStacks = Math.floor(containerNumber / contInStack);
+      var numberOfStacks = Math.ceil(containerNumber / contInStack);
 
       var floorSpace = numberOfStacks*sqFt*2.5*47.57;
       return floorSpace;
@@ -408,22 +410,13 @@ averageFrequency(supplier){ //WORKS
     return invHoldingCost;
   }
 
-  contCapital(part, frequency){//DONE
+  contCapital(part, frequency){//DONE + CHECKED
     let containerNum = this.contPlant(part,frequency) + this.contSupplier(part,frequency) + this.contTransit(part, frequency);
-    //console.log("contPlant: ", this.contPlant(part, frequency));
-    //console.log("contSupplier: ", this.contSupplier(part, frequency));
-    //console.log("contTransit: ", this.contTransit(part, frequency));
-    //console.log("container Price: ", this.containerPrice(part));
+    //console.log("contnum: ", containerNum);
+    //console.log("contPrice: ", this.containerPrice(part));
     let contCapital = containerNum * this.containerPrice(part);
     return contCapital;
   }
-
-
-
-
-
-
-
 
 
   ////////////////////////////////////////// PLANT CALC ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -454,14 +447,6 @@ averageFrequency(supplier){ //WORKS
     return IntHandlingTime * this.ContainersPerDay(part);
   }
 
-
-
-
-
-
-
-
-
   ////////////////////////////////SUPPLIER CALC //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   contSupplier(part, frequency){
       return this.ShipSize(part, frequency) + this.SupplierSafetyStock(part, frequency);
@@ -473,22 +458,13 @@ averageFrequency(supplier){ //WORKS
   }
 
 
-
-
-
-
-
-
-
   ////////////////////////// TRANSIT CALC //////////////
   contTransit(part, frequency){
-     //EQ GOOD
-    return this.ShipSize(part,frequency) * Math.ceil(frequency*this.TransTime(part))+1;
+    return this.ShipSize(part,frequency) * (Math.ceil((frequency/6)*this.TransTime(part))+1);
   }
 
-  ShipSize(part,frequency){
-     //EQ GOOD
-    return (this.ContainersPerDay(part))/frequency;
+  ShipSize(part,frequency){//DONE + CHECKED
+    return (this.ContainersPerDay(part))/(frequency/6);
   }
 
   ContainersPerDay(part){
@@ -501,13 +477,13 @@ averageFrequency(supplier){ //WORKS
     return (this.averageQtyWk(part)/6);
   }
 
-  TransTime(part){
+  TransTime(part){//DONE + CHECKED
     return this.TruckTime(part) + this.MxBorder(part) + this.ODC(part);
   }
 
-  TruckTime(part){
-     //EQ GOOD
-    return (2 + ((2*this.getMiles(part))/50))/10;
+  TruckTime(part){//DONE + CHECKED
+    let truckTime = (2 + ((1*this.getMiles(part))/50))/10;
+    return truckTime;
   }
 
 
@@ -532,23 +508,11 @@ averageFrequency(supplier){ //WORKS
       }
   }
 
-
-
-
-
-
-
-
-
-
-
-
   main() {
     //console.log("In main()...");
-    // console.log("PARTS: ",this.parts);
+    console.log("PARTS: ",this.parts);
     //console.log("ROUTES: ",this.routes);
-    // console.log("CONTAINERS: ",this.containers);
-
+    //console.log("CONTAINERS: ",this.containers);
     this.outputMatrix = [];
     this.trueMatrix = [];
     this.partsLegend = this.parts[0];
@@ -573,15 +537,6 @@ averageFrequency(supplier){ //WORKS
       this.routeDict[route[0]] = route;
     }
 
-let pushRow = [];
-let currentCost = 0;
-
-let CostArray = [];
-let avgFreq = 0;
-let originalFrequency = 0;
-let bestCost = 0;
-let bestFreq = 0;
-
 for(let supplier of this.routes){
   let pushRow = [];
   let currentCost = 0;
@@ -591,7 +546,6 @@ for(let supplier of this.routes){
   let originalFrequency = 0;
   let bestCost = 0;
   let bestFreq = 0;
-
         if (supplier[this.mode] == "TL"){
             pushRow.push(supplier[this.routeID]); //routeID
 
@@ -602,6 +556,7 @@ for(let supplier of this.routes){
               this.incompleteDataSuppliers.push(supplier[this.routeID]);
               continue;
             }
+            //console.log("currCost: ", currentCost);
             pushRow.push(currentCost); //Original Cost
             pushRow.push(originalFrequency); //Original Frequency
 
@@ -637,8 +592,6 @@ for(let supplier of this.routes){
             }
 
             this.outputMatrix.push(pushRow);
-            //console.log(pushRow);
-            //break;
         }
 
         else if (supplier[this.mode] == "MR"){
@@ -650,7 +603,7 @@ for(let supplier of this.routes){
         else if (supplier[this.mode] == "ITL"){
           // console.log("GOT ITL")
         }
-      }
+    }
 
   console.log(this.outputMatrix);
   this.trueMatrix = this.outputMatrix;
