@@ -129,7 +129,8 @@ test(){
     if(!fuelRateIsThere){
       if (confirm(`You forgot to enter in the DOE fuel rate.
 
-        Would you like to use the default $2.559?`)) {
+        'OK' to use the default $2.559.
+        'Cancel' to go back and enter one.`)) {
           this.loadingFlag = true;
           this.populatePartsNoUpload();
       } else {

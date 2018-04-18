@@ -82,10 +82,11 @@
     <p>Cost savings (3rd best): <span *ngIf="totals[2] > 0" style="color:green">{{totals[2] | currency}}</span><span *ngIf="totals[2] <= 0" style="color:red">{{totals[2] | currency}}</span></p>
 
     <table>
-      <tr> <th class="zeroth">Route ID</th> <th class="zeroth">Current Cost</th> <th class="zeroth">Current $ Frequency</th> <th class="firstth">Lowest Cost</th> <th class="firstth">Lowest $ Frequency</th> <th class="firstth">Cost Difference</th> <th class="secondth">2nd Lowest Cost</th>
+      <tr> <th class="zeroth">Ref #</th> <th class="zeroth">Route ID</th> <th class="zeroth">Current Cost</th> <th class="zeroth">Current $ Frequency</th> <th class="firstth">Lowest Cost</th> <th class="firstth">Lowest $ Frequency</th> <th class="firstth">Cost Difference</th> <th class="secondth">2nd Lowest Cost</th>
         <th class="secondth">2nd Lowest $ Frequency</th> <th class="secondth">2nd Cost Difference</th> <th class="thirdth">3rd Lowest Cost</th> <th class="thirdth">3rd Lowest $ Frequency</th> <th class="thirdth">3rd Cost Difference</th></tr>
 
-      <tr *ngFor="let row of outputMatrix">
+      <tr *ngFor="let row of outputMatrix, let i = index">
+        <td>{{i+1}}</td>
         <td>{{row[0]}}</td>
         <td>{{row[1] | currency:0}}</td>
         <td>{{row[2]}}</td>
