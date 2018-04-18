@@ -7,8 +7,11 @@
     <h1>
       GM Capstone
     </h1>
-    <button class="sort-button" (click)="sortByDifference()" *ngIf="showTable">
+    <button class="sort-button" (click)="sortByDifference()" *ngIf="showTable && !sorted">
       Sort By Difference
+    </button>
+    <button class="sort-button" (click)="unSortByDifference()" *ngIf="showTable && sorted">
+      UnSort
     </button>
   </div>
 
@@ -74,8 +77,12 @@
 
   <div *ngIf="showTable && !demo">
 
+    <p>Cost savings: <span *ngIf="totals[0] > 0" style="color:green">{{totals[0] | currency}}</span><span *ngIf="totals[0] <= 0" style="color:red">{{totals[0] | currency}}</span></p>
+    <p>Cost savings (2nd best): <span *ngIf="totals[1] > 0" style="color:green">{{totals[1] | currency}}</span><span *ngIf="totals[1] <= 0" style="color:red">{{totals[1] | currency}}</span></p>
+    <p>Cost savings (3rd best): <span *ngIf="totals[2] > 0" style="color:green">{{totals[2] | currency}}</span><span *ngIf="totals[2] <= 0" style="color:red">{{totals[2] | currency}}</span></p>
+
     <table>
-      <tr> <th>Route ID</th> <th>Current Cost</th> <th>Current $ Frequency</th> <th>Lowest Cost</th> <th>Lowest $ Frequency</th> <th>Cost Difference</th> </tr>
+      <tr> <th>Route ID</th> <th>Current Cost</th> <th>Current $ Frequency</th> <th>Lowest Cost</th> <th>Lowest $ Frequency</th> <th>Cost Difference</th> <th>2nd Lowest Cost</th> <th>2nd Lowest $ Frequency</th> <th>2nd Cost Difference</th> <th>3rd Lowest Cost</th> <th>3rd Lowest $ Frequency</th> <th>3rd Cost Difference</th></tr>
 
       <tr *ngFor="let row of outputMatrix">
         <td>{{row[0]}}</td>
@@ -91,6 +98,34 @@
             {{row[5] | currency}}
           </div>
           <div *ngIf="row[3] == row[1]" style="color:grey">
+            $0
+          </div>
+        </td>
+
+        <td>{{row[6] | currency}}</td>
+        <td>{{row[7]}}</td>
+        <td>
+          <div *ngIf="row[6] < row[1]" style="color:green">
+            {{row[8] | currency}}
+          </div>
+          <div *ngIf="row[6] > row[1]" style="color:red">
+            {{row[8] | currency}}
+          </div>
+          <div *ngIf="row[6] == row[1]" style="color:grey">
+            $0
+          </div>
+        </td>
+
+        <td>{{row[9] | currency}}</td>
+        <td>{{row[10]}}</td>
+        <td>
+          <div *ngIf="row[9] < row[1]" style="color:green">
+            {{row[11] | currency}}
+          </div>
+          <div *ngIf="row[9] > row[1]" style="color:red">
+            {{row[11] | currency}}
+          </div>
+          <div *ngIf="row[9] == row[1]" style="color:grey">
             $0
           </div>
         </td>

@@ -24,6 +24,7 @@ containers = []
 outputMatrix = [];
 trueMatrix = [];
 incompleteDataSuppliers = []
+totals = [];
 
 // Dictionary for looking up route type by route number, ex: "MR" for MilkRun
 routeDict = {}
@@ -81,6 +82,7 @@ ManufacTime = 2
 loadingFlag: boolean = false;
 demo: boolean = false;
 showTable: boolean = false;
+sorted: boolean = false;
 
 
   constructor(private papa: PapaParseService) {
@@ -530,11 +532,23 @@ averageFrequency(supplier){ //WORKS
       }
   }
 
+
+
+
+
+
+
+
+
+
+
+
   main() {
     //console.log("In main()...");
-    console.log("PARTS: ",this.parts);
+    // console.log("PARTS: ",this.parts);
     //console.log("ROUTES: ",this.routes);
-    //console.log("CONTAINERS: ",this.containers);
+    // console.log("CONTAINERS: ",this.containers);
+
     this.outputMatrix = [];
     this.trueMatrix = [];
     this.partsLegend = this.parts[0];
@@ -639,14 +653,38 @@ for(let supplier of this.routes){
       }
 
   console.log(this.outputMatrix);
-  this.trueMatrix = this.outputMatrix
-  console.log(this.incompleteDataSuppliers);
+  this.trueMatrix = this.outputMatrix;
+
+  var t1=0;
+  var t2=0;
+  var t3=0;
+  for(let row of this.trueMatrix){
+    t1 += parseFloat(row[5]);
+    if(!isNaN(parseFloat(row[8]))){
+      t2 += parseFloat(row[8]);
+    }
+    if(!isNaN(parseFloat(row[11]))){
+      t3 += parseFloat(row[11]);
+    }
+  }
+  this.totals.push(t1);
+  this.totals.push(t2);
+  this.totals.push(t3);
+
+  // console.log(this.incompleteDataSuppliers);
 
   this.showTable = true;
   this.loadingFlag = false;
 
 } // main() end
 
+
+
+
+unSortByDifference() {
+  this.outputMatrix = this.trueMatrix;
+  this.sorted = false;
+}
 sortByDifference() {
   let temp = [];
 
@@ -668,8 +706,8 @@ sortByDifference() {
     temp.push(max);
     tempTrue.splice(index,1);
   }
-
   this.outputMatrix = temp;
+  this.sorted = true;
 }
 
 
