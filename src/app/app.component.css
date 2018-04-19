@@ -48,10 +48,20 @@ h1 {
 .fuel_input {
   font-size: 1em;
   font-style: bold;
+  width: 3em;
 }
 
 .file_input{
   padding-top: 30px;
+}
+
+.border-left{
+  border-left: solid 3px grey;
+}
+
+.selected-freq{
+  color: #094caa;
+  font-size: 1.2em;
 }
 
 tr:hover {background-color: gainsboro;}

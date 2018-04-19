@@ -1,16 +1,19 @@
 <div class="main">
 
   <div style="text-align:center">
-    <button class="back-button" (click)="clickedBack()" *ngIf="showTable">
+    <button class="back-button" (click)="clickedBackToUploads()" *ngIf="showTable && !routeDetail">
       Back to Uploads
+    </button>
+    <button class="back-button" (click)="clickedBackToTable()" *ngIf="showTable && routeDetail">
+      Back to Table
     </button>
     <h1>
       GM Capstone
     </h1>
-    <button class="sort-button" (click)="sortByDifference()" *ngIf="showTable && !sorted">
+    <button class="sort-button" (click)="sortByDifference()" *ngIf="showTable && !sorted && !routeDetail">
       Sort By Difference
     </button>
-    <button class="sort-button" (click)="unSortByDifference()" *ngIf="showTable && sorted">
+    <button class="sort-button" (click)="unSortByDifference()" *ngIf="showTable && sorted && !routeDetail">
       UnSort
     </button>
   </div>
@@ -26,7 +29,7 @@
 
     <br />
     <br />
-    DOE FuelRate: $<input type="number" id="fuelrate" class="fuel_input"/>
+    DOE FuelRate: $<input type="number" id="fuelrate" class="fuel_input"/>/gal
     <br />
 
 
@@ -57,13 +60,9 @@
       <u>GO (no upload)</u>
     </button>
     <!-- <br />
-    <button class="ok-button" (click)="clickedDemo()">
-      Demo Table...
-    </button> -->
-    <br />
     <button class="ok-button" (click)="test()">
       test code
-    </button>
+    </button> -->
 
   </div>
 
@@ -75,22 +74,22 @@
 
 
 
-  <div *ngIf="showTable && !demo">
+  <div *ngIf="showTable && !demo && !routeDetail">
 
-    <p>Cost savings: <span *ngIf="totals[0] > 0" style="color:green">{{totals[0] | currency}}</span><span *ngIf="totals[0] <= 0" style="color:red">{{totals[0] | currency}}</span></p>
-    <p>Cost savings (2nd best): <span *ngIf="totals[1] > 0" style="color:green">{{totals[1] | currency}}</span><span *ngIf="totals[1] <= 0" style="color:red">{{totals[1] | currency}}</span></p>
-    <p>Cost savings (3rd best): <span *ngIf="totals[2] > 0" style="color:green">{{totals[2] | currency}}</span><span *ngIf="totals[2] <= 0" style="color:red">{{totals[2] | currency}}</span></p>
+    <p *ngIf="showSavings==0" (click)="changeShowSavings(1)">Cost savings: <span *ngIf="totals[0] > 0" style="color:green">{{totals[0] | currency}}</span><span *ngIf="totals[0] <= 0" style="color:red">{{totals[0] | currency}}</span></p>
+    <p *ngIf="showSavings==1" (click)="changeShowSavings(2)">Cost savings (2nd best): <span *ngIf="totals[1] > 0" style="color:green">{{totals[1] | currency}}</span><span *ngIf="totals[1] <= 0" style="color:red">{{totals[1] | currency}}</span></p>
+    <p *ngIf="showSavings==2" (click)="changeShowSavings(0)">Cost savings (3rd best): <span *ngIf="totals[2] > 0" style="color:green">{{totals[2] | currency}}</span><span *ngIf="totals[2] <= 0" style="color:red">{{totals[2] | currency}}</span></p>
 
     <table>
       <tr> <th class="zeroth">Ref #</th> <th class="zeroth">Route ID</th> <th class="zeroth">Current Cost</th> <th class="zeroth">Current $ Frequency</th> <th class="firstth">Lowest Cost</th> <th class="firstth">Lowest $ Frequency</th> <th class="firstth">Cost Difference</th> <th class="secondth">2nd Lowest Cost</th>
         <th class="secondth">2nd Lowest $ Frequency</th> <th class="secondth">2nd Cost Difference</th> <th class="thirdth">3rd Lowest Cost</th> <th class="thirdth">3rd Lowest $ Frequency</th> <th class="thirdth">3rd Cost Difference</th></tr>
 
-      <tr *ngFor="let row of outputMatrix, let i = index">
+      <tr *ngFor="let row of outputMatrix, let i = index" (click)="showRouteDetails(i)">
         <td>{{i+1}}</td>
         <td>{{row[0]}}</td>
         <td>{{row[1] | currency:0}}</td>
         <td>{{row[2]}}</td>
-        <td>{{row[3] | currency}}</td>
+        <td class="border-left">{{row[3] | currency}}</td>
         <td>{{row[4]}}</td>
         <td>
           <div *ngIf="row[3] < row[1]" style="color:green">
@@ -104,7 +103,7 @@
           </div>
         </td>
 
-        <td>{{row[6] | currency}}</td>
+        <td class="border-left">{{row[6] | currency}}</td>
         <td>{{row[7]}}</td>
         <td>
           <div *ngIf="row[6] < row[1]" style="color:green">
@@ -118,7 +117,7 @@
           </div>
         </td>
 
-        <td>{{row[9] | currency}}</td>
+        <td class="border-left">{{row[9] | currency}}</td>
         <td>{{row[10]}}</td>
         <td>
           <div *ngIf="row[9] < row[1]" style="color:green">
@@ -138,21 +137,22 @@
 
 
 
+  <div *ngIf="routeDetail">
+    <div style="text-align:center">
+      <h2>Route: {{outputMatrix[routeIndex][0]}}</h2>
+      <h3>Origin: {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][0]][city]}}, {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][0]][state]}}</h3>
+      <br />
+      <h4>Frequency</h4>
+      <p style="text-align:center"><span *ngFor="let freq of freqArray, let i = index" (click)="clickedFreq(freq, i)"><span *ngIf="isNaN(freq)">&nbsp;&nbsp;<span *ngIf="i!=selectedIndex">{{freq}}</span><span class="selected-freq" *ngIf="i==selectedIndex"><b>{{freq}}</b></span>&nbsp;&nbsp;</span></span></p>
 
-
-
-  <div *ngIf="showTable && demo">
-    <table>
-      <tr> <th>Supplier</th> <th>Best Frequency</th> <th>Best Cost</th> <th>Originial Frequency</th> <th>Original Cost</th> <th> Cost Difference</th> </tr>
-
-      <tr><td>detroit</td><td>2456.3</td><td>4324</td><td>8494</td></tr>
-
-      <tr><td>ypsi</td><td>1234.23</td><td>5356.34</td><td>7549.98</td></tr>
-
-      <tr><td>ann arbor</td><td>4237.5</td><td>8599.2</td><td>5574.3</td></tr>
-    </table>
-
+    </div>
+    <br />
+    <p>Freight Cost: <span *ngIf="routeFreightCostDict[selectedFreq]"><b>{{routeFreightCostDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeFreightCostDict[selectedFreq]"><b>N/A</b></span></p>
+    <p>Floor Space Cost: <span *ngIf="routeFloorSpaceDict[selectedFreq]"><b>{{routeFloorSpaceDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeFloorSpaceDict[selectedFreq]"><b>N/A</b></span></p>
+    <p>Inventory Holding Cost: <span *ngIf="routeInvHoldingDict[selectedFreq]"><b>{{routeInvHoldingDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeInvHoldingDict[selectedFreq]"><b>N/A</b></span></p>
+    <p>Container Capital: <span *ngIf="routeContCapitalDict[selectedFreq]"><b>{{routeContCapitalDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeContCapitalDict[selectedFreq]"><b>N/A</b></span></p>
   </div>
+
 
 
 </div>
