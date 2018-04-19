@@ -108,6 +108,8 @@ routeIndex = 0;
 freqArray = [];
 selectedFreq: any;
 selectedIndex: any;
+currentFreq: any;
+bestFreq: any;
 routeFreightCostDict = {};
 routeFloorSpaceDict = {};
 routeInvHoldingDict = {};
@@ -141,11 +143,15 @@ test(){
     this.routeIndex = i;
     this.selectedIndex = 2;
     var currentFreq = this.outputMatrix[i][2];
+    var bestFreq = this.outputMatrix[i][4];
     this.freqArray = [];
     var j = 0;
     for(let entry of this.outputMatrix[i]){
       if((j%3)==1 && j!=1 ){
         if(entry == currentFreq){
+          // this.selectedFreq = entry;
+        }
+        if(entry == bestFreq){
           this.selectedFreq = entry;
         }
         this.freqArray.push(entry);
@@ -163,7 +169,8 @@ test(){
     this.routeFloorSpaceDict = this.floorSpaceDict[this.outputMatrix[i][0]];
     this.routeInvHoldingDict = this.invHoldingDict[this.outputMatrix[i][0]];
     this.routeContCapitalDict = this.contCapitalDict[this.outputMatrix[i][0]];
-
+    this.currentFreq = currentFreq;
+    this.bestFreq = bestFreq;
     this.routeDetail = true;
 
   }
@@ -664,7 +671,7 @@ averageFrequency(supplier){ //WORKS
 
 
 
-
+d
 
   ////////////////////////////////// 4 MAIN COST CALCULATIONS ////////////////////////////////
   freight(supplier, frequency){//DONE + CHECKED

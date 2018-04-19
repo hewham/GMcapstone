@@ -137,21 +137,124 @@
 
 
 
+
+
+
+
+
   <div *ngIf="routeDetail">
     <div style="text-align:center">
       <h2>Route: {{outputMatrix[routeIndex][0]}}</h2>
       <h3>Origin: {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][0]][city]}}, {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][0]][state]}}</h3>
       <br />
-      <h4>Frequency</h4>
+      <h3>Frequency</h3>
+      <h5>Currently Used: ({{currentFreq}})   |   Best Possible: ({{bestFreq}})</h5>
       <p style="text-align:center"><span *ngFor="let freq of freqArray, let i = index" (click)="clickedFreq(freq, i)"><span *ngIf="isNaN(freq)">&nbsp;&nbsp;<span *ngIf="i!=selectedIndex">{{freq}}</span><span class="selected-freq" *ngIf="i==selectedIndex"><b>{{freq}}</b></span>&nbsp;&nbsp;</span></span></p>
 
     </div>
+
     <br />
-    <p>Freight Cost: <span *ngIf="routeFreightCostDict[selectedFreq]"><b>{{routeFreightCostDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeFreightCostDict[selectedFreq]"><b>N/A</b></span></p>
-    <p>Floor Space Cost: <span *ngIf="routeFloorSpaceDict[selectedFreq]"><b>{{routeFloorSpaceDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeFloorSpaceDict[selectedFreq]"><b>N/A</b></span></p>
-    <p>Inventory Holding Cost: <span *ngIf="routeInvHoldingDict[selectedFreq]"><b>{{routeInvHoldingDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeInvHoldingDict[selectedFreq]"><b>N/A</b></span></p>
-    <p>Container Capital: <span *ngIf="routeContCapitalDict[selectedFreq]"><b>{{routeContCapitalDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeContCapitalDict[selectedFreq]"><b>N/A</b></span></p>
+    <table>
+      <th class="zeroth"> </th><th class="zeroth">Current ({{currentFreq}})</th><th class="firstth">Selected ({{selectedFreq}})</th><th class="secondth">difference</th>
+      <tr>
+        <td>Freight Cost</td>
+        <td><span *ngIf="routeFreightCostDict[currentFreq]">{{routeFreightCostDict[currentFreq] | currency}}</span><span *ngIf="!routeFreightCostDict[currentFreq]">N/A</span>
+        </td>
+        <td><span *ngIf="routeFreightCostDict[selectedFreq]"><b>{{routeFreightCostDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeFreightCostDict[selectedFreq]"><b>N/A</b></span>
+        </td>
+        <td>
+          <div *ngIf="routeFreightCostDict[selectedFreq]">
+            <div *ngIf="routeFreightCostDict[currentFreq] - routeFreightCostDict[selectedFreq] > 0"  style="color:green">
+              <b>{{routeFreightCostDict[currentFreq] - routeFreightCostDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="routeFreightCostDict[currentFreq] - routeFreightCostDict[selectedFreq] < 0"  style="color:red">
+              <b>{{routeFreightCostDict[currentFreq] - routeFreightCostDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="routeFreightCostDict[currentFreq] - routeFreightCostDict[selectedFreq] == 0"  style="color:grey">
+              <b>{{routeFreightCostDict[currentFreq] - routeFreightCostDict[selectedFreq] | currency}}</b>
+            </div>
+          </div>
+          <div *ngIf="!routeFreightCostDict[selectedFreq]" style="color:grey">
+            <b>N/A</b>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>Floor Space Cost</td>
+        <td><span *ngIf="routeFloorSpaceDict[currentFreq]">{{routeFloorSpaceDict[currentFreq] | currency}}</span><span *ngIf="!routeFloorSpaceDict[currentFreq]">N/A</span>
+        </td>
+        <td><span *ngIf="routeFloorSpaceDict[selectedFreq]"><b>{{routeFloorSpaceDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeFloorSpaceDict[selectedFreq]"><b>N/A</b></span>
+        </td>
+        <td>
+          <div *ngIf="routeFloorSpaceDict[selectedFreq]">
+            <div *ngIf="routeFloorSpaceDict[currentFreq] - routeFloorSpaceDict[selectedFreq] > 0"  style="color:green">
+              <b>{{routeFloorSpaceDict[currentFreq] - routeFloorSpaceDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="routeFloorSpaceDict[currentFreq] - routeFloorSpaceDict[selectedFreq] < 0"  style="color:red">
+              <b>{{routeFloorSpaceDict[currentFreq] - routeFloorSpaceDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="routeFloorSpaceDict[currentFreq] - routeFloorSpaceDict[selectedFreq] == 0"  style="color:grey">
+              <b>{{routeFloorSpaceDict[currentFreq] - routeFloorSpaceDict[selectedFreq] | currency}}</b>
+            </div>
+          </div>
+          <div *ngIf="!routeFloorSpaceDict[selectedFreq]" style="color:grey">
+            <b>N/A</b>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>Inventory Holding Cost</td>
+        <td><span *ngIf="routeInvHoldingDict[currentFreq]">{{routeInvHoldingDict[currentFreq] | currency}}</span><span *ngIf="!routeInvHoldingDict[currentFreq]">N/A</span>
+        </td>
+        <td><span *ngIf="routeInvHoldingDict[selectedFreq]"><b>{{routeInvHoldingDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeInvHoldingDict[selectedFreq]"><b>N/A</b></span>
+        </td>
+        <td>
+          <div *ngIf="routeInvHoldingDict[selectedFreq]">
+            <div *ngIf="routeInvHoldingDict[currentFreq] - routeInvHoldingDict[selectedFreq] > 0"  style="color:green">
+              <b>{{routeInvHoldingDict[currentFreq] - routeInvHoldingDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="routeInvHoldingDict[currentFreq] - routeInvHoldingDict[selectedFreq] < 0"  style="color:red">
+              <b>{{routeInvHoldingDict[currentFreq] - routeInvHoldingDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="routeInvHoldingDict[currentFreq] - routeInvHoldingDict[selectedFreq] == 0"  style="color:grey">
+              <b>{{routeInvHoldingDict[currentFreq] - routeInvHoldingDict[selectedFreq] | currency}}</b>
+            </div>
+          </div>
+          <div *ngIf="!routeInvHoldingDict[selectedFreq]" style="color:grey">
+            <b>N/A</b>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>Container Capital</td>
+        <td><span *ngIf="routeContCapitalDict[currentFreq]">{{routeContCapitalDict[currentFreq] | currency}}</span><span *ngIf="!routeContCapitalDict[currentFreq]">N/A</span>
+        </td>
+        <td><span *ngIf="routeContCapitalDict[selectedFreq]"><b>{{routeContCapitalDict[selectedFreq] | currency}}</b></span><span *ngIf="!routeContCapitalDict[selectedFreq]"><b>N/A</b></span>
+        </td>
+        <td>
+          <div *ngIf="routeContCapitalDict[selectedFreq]">
+            <div *ngIf="routeContCapitalDict[currentFreq] - routeContCapitalDict[selectedFreq] > 0"  style="color:green">
+              <b>{{routeContCapitalDict[currentFreq] - routeContCapitalDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="routeContCapitalDict[currentFreq] - routeContCapitalDict[selectedFreq] < 0"  style="color:red">
+              <b>{{routeContCapitalDict[currentFreq] - routeContCapitalDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="routeContCapitalDict[currentFreq] - routeContCapitalDict[selectedFreq] == 0"  style="color:grey">
+              <b>{{routeContCapitalDict[currentFreq] - routeContCapitalDict[selectedFreq] | currency}}</b>
+            </div>
+          </div>
+          <div *ngIf="!routeContCapitalDict[selectedFreq]" style="color:grey">
+            <b>N/A</b>
+          </div>
+        </td>
+      </tr>
+
+    </table>
   </div>
+
 
 
 
