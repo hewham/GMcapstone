@@ -404,10 +404,6 @@ test(){
         else if (supplier[this.mode] == "CON"){
            // console.log("GOT CON")
         }
-        else if (supplier[this.mode] == "ITL"){
-          // console.log("GOT ITL")
-        }
-
     }
 
   this.trueMatrix = this.outputMatrix;
@@ -634,7 +630,7 @@ averageFrequency(supplier){ //WORKS
     for(let part of this.parts){
       partCount++;
 
-      if(this.routeDict[part[this.routeID]][this.mode] == "TL" && part[this.routeID] == supplier[this.routeID]){
+      if(part[this.routeID] == supplier[this.routeID]){
         supplierCost += this.finalPartCost(part, frequency);
       }
     }
