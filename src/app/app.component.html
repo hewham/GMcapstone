@@ -252,6 +252,31 @@
         </td>
       </tr>
 
+      <tr>
+        <td>Totals</td>
+        <td><span *ngIf="totalsDict[currentFreq]">{{totalsDict[currentFreq] | currency}}</span><span *ngIf="!totalsDict[currentFreq]">N/A</span>
+        </td>
+        <td><span *ngIf="totalsDict[selectedFreq]"><b>{{totalsDict[selectedFreq] | currency}}</b></span><span *ngIf="!totalsDict[selectedFreq]"><b>N/A</b></span>
+        </td>
+        <td>
+          <div *ngIf="totalsDict[selectedFreq]">
+            <div *ngIf="totalsDict[currentFreq] - totalsDict[selectedFreq] > 0"  style="color:green">
+              <b>{{totalsDict[currentFreq] - totalsDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="totalsDict[currentFreq] - totalsDict[selectedFreq] < 0"  style="color:red">
+              <b>{{totalsDict[currentFreq] - totalsDict[selectedFreq] | currency}}</b>
+            </div>
+            <div *ngIf="totalsDict[currentFreq] - totalsDict[selectedFreq] == 0"  style="color:grey">
+              <b>{{totalsDict[currentFreq] - totalsDict[selectedFreq] | currency}}</b>
+            </div>
+          </div>
+          <div *ngIf="!totalsDict[selectedFreq]" style="color:grey">
+            <b>N/A</b>
+          </div>
+        </td>
+      </tr>
+
+
     </table>
   </div>
 

@@ -30,11 +30,13 @@ freightCostArray = [];
 floorSpaceArray = [];
 invHoldingArray = [];
 contCapitalArray = [];
+supplierCostArray = [];
 
 freightCostDict = {};
 floorSpaceDict = {};
 invHoldingDict = {};
 contCapitalDict = {};
+supplierCostDict = {};
 
 
 rowNumber = 0;
@@ -106,6 +108,7 @@ routeIndex = 0;
 
 //Stuff for route part page
 freqArray = [];
+totalsDict = {};
 selectedFreq: any;
 selectedIndex: any;
 currentFreq: any;
@@ -114,6 +117,7 @@ routeFreightCostDict = {};
 routeFloorSpaceDict = {};
 routeInvHoldingDict = {};
 routeContCapitalDict = {};
+routeSupplierCostDict = {};
 
   constructor(private papa: PapaParseService) {
 
@@ -142,6 +146,7 @@ test(){
   showRouteDetails(i){
     this.routeIndex = i;
     this.selectedIndex = 2;
+    this.totalsDict = {};
     var currentFreq = this.outputMatrix[i][2];
     var bestFreq = this.outputMatrix[i][4];
     this.freqArray = [];
@@ -155,6 +160,7 @@ test(){
           this.selectedFreq = entry;
         }
         this.freqArray.push(entry);
+        this.totalsDict[entry] = [];
       }
       j++;
     }
@@ -169,6 +175,15 @@ test(){
     this.routeFloorSpaceDict = this.floorSpaceDict[this.outputMatrix[i][0]];
     this.routeInvHoldingDict = this.invHoldingDict[this.outputMatrix[i][0]];
     this.routeContCapitalDict = this.contCapitalDict[this.outputMatrix[i][0]];
+    this.routeContCapitalDict = this.contCapitalDict[this.outputMatrix[i][0]];
+    this.routeSupplierCostDict = this.supplierCostDict[this.outputMatrix[i][0]];
+
+    for (let freq of this.freqArray){
+      this.totalsDict[freq] = this.routeFreightCostDict[freq] + this.routeFloorSpaceDict[freq] + this.routeInvHoldingDict[freq] + this.routeContCapitalDict[freq];
+    }
+
+
+
     this.currentFreq = currentFreq;
     this.bestFreq = bestFreq;
     this.routeDetail = true;
@@ -335,6 +350,7 @@ test(){
 
   for(let supplier of this.routes){
 
+    let breakFlag = false;
 
     let pushRow = [];
     let currentCost = 0;
@@ -349,6 +365,7 @@ test(){
             this.floorSpaceArray.push({});
             this.invHoldingArray.push({});
             this.contCapitalArray.push({});
+            this.supplierCostArray.push({});
 
             pushRow.push(supplier[this.routeID]); //routeID
 
@@ -359,7 +376,6 @@ test(){
               this.incompleteDataSuppliers.push(supplier[this.routeID]);
               continue;
             }
-            //console.log("currCost: ", currentCost);
             pushRow.push(currentCost); //Original Cost
             pushRow.push(originalFrequency); //Original Frequency
 
@@ -376,9 +392,10 @@ test(){
               frequencyRangeDict[(this.finalSupplierCost(supplier, i))] = i;
               frequencyRangeAry.push(this.finalSupplierCost(supplier, i));
             }
+
             frequencyRangeAry = frequencyRangeAry.sort(function(a, b){return b - a});
 
-            for(let j = 0; j<20; j++){
+            for(let j = 0; j<100; j++){
               if(frequencyRangeAry.length > 0){
                 let minCost = frequencyRangeAry.pop();
                 let minFreq = frequencyRangeDict[minCost];
@@ -425,6 +442,7 @@ populateDicts(){
     this.floorSpaceDict[row[0]] = this.floorSpaceArray[i];
     this.invHoldingDict[row[0]] = this.invHoldingArray[i];
     this.contCapitalDict[row[0]] = this.contCapitalArray[i];
+    this.supplierCostDict[row[0]] = this.supplierCostArray[i];
     i++;
   }
 }
@@ -444,6 +462,7 @@ calculateTotals(){
       t3 += parseFloat(row[11]);
     }
   }
+
   this.totals.push(t1);
   this.totals.push(t2);
   this.totals.push(t3);
@@ -456,8 +475,8 @@ calculateTotals(){
 unSortByDifference() {
   this.outputMatrix = this.trueMatrix;
   this.sorted = false;
-
 }
+
 sortByDifference() {
   let temp = [];
   let tempTrue = [];
@@ -624,14 +643,60 @@ averageFrequency(supplier){ //WORKS
 
 
   finalSupplierCost(supplier, frequency){ //final cost to be used w/ frequency
+    this.floorSpaceArray[this.rowNumber][frequency] = 0;
+    this.invHoldingArray[this.rowNumber][frequency] = 0;
+    this.contCapitalArray[this.rowNumber][frequency] = 0;
+    this.supplierCostArray[this.rowNumber][frequency] = 0;
 
     let supplierCost = 0;
-    let partCount = 0;
+
     for(let part of this.parts){
-      partCount++;
 
       if(part[this.routeID] == supplier[this.routeID]){
         supplierCost += this.finalPartCost(part, frequency);
+
+        this.floorSpaceArray[this.rowNumber][frequency] += this.floorSpace(part, frequency);
+        this.invHoldingArray[this.rowNumber][frequency] += this.invHolding(part, frequency);
+        this.contCapitalArray[this.rowNumber][frequency] += this.contCapital(part, frequency);
+        this.supplierCostArray[this.rowNumber][frequency] += this.finalPartCost(part, frequency);
+      }
+    }
+    var freightCost = this.freight(supplier, frequency) * 49;
+
+    this.freightCostArray[this.rowNumber][frequency] = freightCost;
+
+    supplierCost += freightCost;
+
+
+
+    // this.supplierCostArray[this.rowNumber][frequency] = Math.ceil(supplierCost);
+    this.supplierCostArray[this.rowNumber][frequency] = supplierCost;
+
+    return Math.ceil(supplierCost);
+  }
+
+  finalSupplierCostCheck(supplier, frequency){ //final cost to be used w/ frequency
+
+    let supplierCost = 0;
+
+    for(let part of this.parts){
+
+      if(part[this.routeID] == supplier[this.routeID]){
+        supplierCost += this.finalPartCost(part, frequency);
+
+        if(!this.floorSpaceArray[this.rowNumber][frequency]){
+          this.floorSpaceArray[this.rowNumber][frequency] = 0; }
+        if(!this.invHoldingArray[this.rowNumber][frequency]){
+          this.invHoldingArray[this.rowNumber][frequency] = 0; }
+        if(!this.contCapitalArray[this.rowNumber][frequency]){
+          this.contCapitalArray[this.rowNumber][frequency] = 0; }
+        if(!this.supplierCostArray[this.rowNumber][frequency]){
+          this.supplierCostArray[this.rowNumber][frequency] = 0; }
+
+        this.floorSpaceArray[this.rowNumber][frequency] += this.floorSpace(part, frequency);
+        this.invHoldingArray[this.rowNumber][frequency] += this.invHolding(part, frequency);
+        this.contCapitalArray[this.rowNumber][frequency] += this.contCapital(part, frequency);
+        this.supplierCostArray[this.rowNumber][frequency] += this.finalPartCost(part, frequency);
       }
     }
     var freightCost = this.freight(supplier, frequency);
@@ -639,6 +704,17 @@ averageFrequency(supplier){ //WORKS
     this.freightCostArray[this.rowNumber][frequency] = freightCost;
 
     supplierCost += freightCost;
+
+    if(supplier[this.routeID] == "MCM07A"){
+      console.log("");
+      console.log(supplierCost);
+      console.log(this.rowNumber);
+      console.log(frequency);
+    }
+
+    // this.supplierCostArray[this.rowNumber][frequency] = Math.ceil(supplierCost);
+    this.supplierCostArray[this.rowNumber][frequency] = supplierCost;
+
     return Math.ceil(supplierCost);
   }
 
@@ -648,9 +724,9 @@ averageFrequency(supplier){ //WORKS
     //        console.log("contCapt: ", this.contCapital(part, frequency));
     let cost = this.floorSpace(part, frequency) + this.invHolding(part, frequency) + this.contCapital(part, frequency);
 
-    this.floorSpaceArray[this.rowNumber][frequency] = this.floorSpace(part, frequency);
-    this.invHoldingArray[this.rowNumber][frequency] = this.invHolding(part, frequency);
-    this.contCapitalArray[this.rowNumber][frequency] = this.contCapital(part, frequency);
+    // this.floorSpaceArray[this.rowNumber][frequency] = this.floorSpace(part, frequency);
+    // this.invHoldingArray[this.rowNumber][frequency] = this.invHolding(part, frequency);
+    // this.contCapitalArray[this.rowNumber][frequency] = this.contCapital(part, frequency);
 
 
     return cost;
@@ -667,7 +743,7 @@ averageFrequency(supplier){ //WORKS
 
 
 
-d
+
 
   ////////////////////////////////// 4 MAIN COST CALCULATIONS ////////////////////////////////
   freight(supplier, frequency){//DONE + CHECKED
