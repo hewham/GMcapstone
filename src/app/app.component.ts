@@ -107,7 +107,11 @@ routeIndex = 0;
 
 //Stuff for route part page
 freqArray = [];
+originalFreqArray = [];
 totalsDict = {};
+freqRank: any;
+freqArrayLength: any;
+freqSorted: boolean = false;
 selectedFreq: any;
 selectedIndex: any;
 currentFreq: any;
@@ -175,9 +179,18 @@ test(){
     this.routeContCapitalDict = this.contCapitalDict[this.outputMatrix[i][0]];
     this.routeSupplierCostDict = this.supplierCostDict[this.outputMatrix[i][0]];
 
+    this.originalFreqArray = [];
+    this.freqArrayLength = 0;
     for (let freq of this.freqArray){
       this.totalsDict[freq] = this.routeFreightCostDict[freq] + this.routeFloorSpaceDict[freq] + this.routeInvHoldingDict[freq] + this.routeContCapitalDict[freq];
+      this.originalFreqArray.push(freq);
+      if(!isNaN(freq)){
+        console.log("freq NaN: ",freq);
+        this.freqArrayLength += 1;
+      }
     }
+
+    this.freqRank = 1;
 
     this.currentFreq = currentFreq;
     this.bestFreq = bestFreq;
@@ -193,6 +206,28 @@ test(){
   clickedFreq(freq, i){
     this.selectedFreq = freq;
     this.selectedIndex = i;
+    let j = 1;
+    for(let checkFreq of this.originalFreqArray){
+      if(freq == checkFreq){
+        break;
+      }
+      j++;
+    }
+    this.freqRank = j;
+    console.log(this.freqRank);
+  }
+
+  sortFreqArray(){
+    this.freqArray.sort((a, b) => a - b);
+    this.freqSorted = true;
+  }
+
+  unSortFreqArray(){
+    this.freqArray = [];
+    for(let freq of this.originalFreqArray){
+      this.freqArray.push(freq);
+    }
+    this.freqSorted = false;
   }
 
   isNaN(num){

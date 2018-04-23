@@ -1,4 +1,4 @@
-.main{
+  .main{
   /* background-color: #202020; */
   font-family: "Verdana", sans-serif;
   width: 100%;
@@ -122,4 +122,14 @@ tr:hover {background-color: gainsboro;}
   margin-right: auto;
   width: 40%;
   padding-top: 12%;
+}
+
+.freq-numbers{
+   text-align:center;
+   max-width: 100% !important;
+   word-wrap: break-word;
+}
+
+.sort-text{
+  color: #073980;
 }
