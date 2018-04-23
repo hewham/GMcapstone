@@ -4,7 +4,6 @@ import { PapaParseService } from 'ngx-papaparse';
 import { UploadEvent, UploadFile } from 'ngx-file-drop';
 
 
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -128,8 +127,6 @@ test(){
 
 }
 
-
-
   clickedDemo(){
     this.showTable = true;
     this.demo = true;
@@ -182,8 +179,6 @@ test(){
       this.totalsDict[freq] = this.routeFreightCostDict[freq] + this.routeFloorSpaceDict[freq] + this.routeInvHoldingDict[freq] + this.routeContCapitalDict[freq];
     }
 
-
-
     this.currentFreq = currentFreq;
     this.bestFreq = bestFreq;
     this.routeDetail = true;
@@ -210,8 +205,6 @@ test(){
 
 
 
-
-
   clickedOKNoUpload() {
     var fuelRateIsThere: boolean = true;
     var fuelrate: any;
@@ -226,7 +219,6 @@ test(){
 
     if(!fuelRateIsThere){
       if (confirm(`You forgot to enter in the DOE fuel rate.
-
         'OK' to use the default $`+String(this.fuelRate)+`.
         'Cancel' to go back and enter one.`)) {
           this.loadingFlag = true;
@@ -243,12 +235,10 @@ test(){
 
 
 
-
   clickedOK() {
 
     //console.log("OK WAS CLICKED");
     // this.showTable = true;
-
     var partsFile: any;
     var routesFile: any;
     var containersFile: any;
@@ -282,11 +272,9 @@ test(){
 
     if(!allFilesAreThere){
       alert(`You forgot to add a File.
-
         Please add all files and try again!`);
     }else if(!fuelRateIsThere){
       if (confirm(`You forgot to enter in the DOE fuel rate.
-
         'OK' to use the default $`+String(this.fuelRate)+`.
         'Cancel' to go back and enter one.`)) {
           this.loadingFlag = true;
@@ -302,8 +290,6 @@ test(){
   }
 
 
-
-
   main() {
     // console.log("using fuelrate: ",this.fuelRate);
     //console.log("In main()...");
@@ -311,6 +297,7 @@ test(){
     //console.log("ROUTES: ",this.routes);
     //console.log("CONTAINERS: ",this.containers);
     this.populateDistances();
+    this.populateSupplierToMexico();
     this.populateDistances_2();
     this.populateOriginIdDict();
     this.outputMatrix = [];
@@ -348,8 +335,14 @@ test(){
 
   this.rowNumber=0;
 
-  for(let supplier of this.routes){
 
+  //for(let supplier of this.routes){
+for(let origin in this.originIdDict){
+    let supplier = this.routeFromOriginId(origin);
+    console.log(supplier);
+    if(supplier == undefined){
+      continue;
+    }
     let breakFlag = false;
 
     let pushRow = [];
@@ -360,6 +353,7 @@ test(){
     let originalFrequency = 0;
     let bestCost = 0;
     let bestFreq = 0;
+
         if (supplier[this.mode] == "TL" || supplier[this.mode] == "ITL"){
             this.freightCostArray.push({});
             this.floorSpaceArray.push({});
@@ -368,17 +362,15 @@ test(){
             this.supplierCostArray.push({});
 
             pushRow.push(supplier[this.routeID]); //routeID
-
             originalFrequency = supplier[this.laneFreq];
 
             currentCost = this.finalSupplierCost(supplier, supplier[this.laneFreq]);
             if(isNaN(currentCost)){
               this.incompleteDataSuppliers.push(supplier[this.routeID]);
-              continue;
+              //continue;
             }
             pushRow.push(currentCost); //Original Cost
             pushRow.push(originalFrequency); //Original Frequency
-
             let frequencyRangeDict = {};
             let frequencyRangeAry = [];
 
@@ -416,10 +408,112 @@ test(){
         }
 
         else if (supplier[this.mode] == "MR"){
-          // console.log("GOT MR")
+          console.log("in MR else if w/ supplier and origin:", supplier, origin);
+          this.freightCostArray.push({});
+          this.floorSpaceArray.push({});
+          this.invHoldingArray.push({});
+          this.contCapitalArray.push({});
+          this.supplierCostArray.push({});
+
+          pushRow.push(supplier[this.routeID]); //routeID
+          //pushRow.push(origin);
+          originalFrequency = supplier[this.laneFreq];
+
+          currentCost = this.MRandCONfinalOriginCost(origin, supplier, supplier[this.laneFreq]);
+          if(isNaN(currentCost)){
+            this.incompleteDataSuppliers.push(supplier[this.routeID]);
+            continue;
+          }
+          pushRow.push(currentCost); //Original Cost
+          pushRow.push(originalFrequency); //Original Frequency
+          let frequencyRangeDict = {};
+          let frequencyRangeAry = [];
+
+          avgFreq = Math.ceil(this.averageFrequency(supplier));///////ASK JAKE ABOUT WHICH AVG FREQUENCY IT SHOULD BE, THIS OR MR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          if( avgFreq < originalFrequency){
+            let temp = avgFreq;
+            avgFreq = originalFrequency;
+            originalFrequency = temp;
+          }
+          for(let i = originalFrequency; i <= avgFreq; i++){
+            frequencyRangeDict[(this.MRandCONfinalOriginCost(origin, supplier, i))] = i;
+            frequencyRangeAry.push(this.MRandCONfinalOriginCost(origin, supplier, i));
+          }
+
+          frequencyRangeAry = frequencyRangeAry.sort(function(a, b){return b - a});
+
+          for(let j = 0; j<100; j++){
+            if(frequencyRangeAry.length > 0){
+              let minCost = frequencyRangeAry.pop();
+              let minFreq = frequencyRangeDict[minCost];
+              pushRow.push(minCost); //Minimum Cost
+              pushRow.push(minFreq); //Minimum frequency
+              let costDiff = currentCost - minCost;
+              pushRow.push(costDiff);  //Cost Difference
+            }
+            else{
+              pushRow.push("");
+              pushRow.push("");
+              pushRow.push("");
+            }
+          }
+
+          this.outputMatrix.push(pushRow);
+          this.rowNumber++;
         }
         else if (supplier[this.mode] == "CON"){
-           // console.log("GOT CON")
+          console.log("in CON else if w/ supplier and origin:", supplier, origin);
+          this.freightCostArray.push({});
+          this.floorSpaceArray.push({});
+          this.invHoldingArray.push({});
+          this.contCapitalArray.push({});
+          this.supplierCostArray.push({});
+
+          pushRow.push(supplier[this.routeID]); //routeID
+          //pushRow.push(origin);
+          originalFrequency = supplier[this.laneFreq];
+
+          currentCost = this.MRandCONfinalOriginCost(origin, supplier, supplier[this.laneFreq]);
+          if(isNaN(currentCost)){
+            this.incompleteDataSuppliers.push(supplier[this.routeID]);
+            continue;
+          }
+          pushRow.push(currentCost); //Original Cost
+          pushRow.push(originalFrequency); //Original Frequency
+          let frequencyRangeDict = {};
+          let frequencyRangeAry = [];
+
+          avgFreq = Math.ceil(this.averageFrequency(supplier));///////ASK JAKE ABOUT WHICH AVG FREQUENCY IT SHOULD BE, THIS OR MR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          if( avgFreq < originalFrequency){
+            let temp = avgFreq;
+            avgFreq = originalFrequency;
+            originalFrequency = temp;
+          }
+          for(let i = originalFrequency; i <= avgFreq; i++){
+            frequencyRangeDict[(this.MRandCONfinalOriginCost(origin, supplier, i))] = i;
+            frequencyRangeAry.push(this.MRandCONfinalOriginCost(origin, supplier, i));
+          }
+
+          frequencyRangeAry = frequencyRangeAry.sort(function(a, b){return b - a});
+
+          for(let j = 0; j<100; j++){
+            if(frequencyRangeAry.length > 0){
+              let minCost = frequencyRangeAry.pop();
+              let minFreq = frequencyRangeDict[minCost];
+              pushRow.push(minCost); //Minimum Cost
+              pushRow.push(minFreq); //Minimum frequency
+              let costDiff = currentCost - minCost;
+              pushRow.push(costDiff);  //Cost Difference
+            }
+            else{
+              pushRow.push("");
+              pushRow.push("");
+              pushRow.push("");
+            }
+          }
+
+          this.outputMatrix.push(pushRow);
+          this.rowNumber++;
         }
     }
 
@@ -432,7 +526,6 @@ test(){
   this.loadingFlag = false;
 
 } // main() end
-
 
 
 populateDicts(){
@@ -467,9 +560,6 @@ calculateTotals(){
   this.totals.push(t2);
   this.totals.push(t3);
 }
-
-
-
 
 
 unSortByDifference() {
@@ -510,17 +600,14 @@ populateOriginIdDict(){
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
+routeFromOriginId(originId){
+  let routeId =  this.originIdDict[originId];
+  for( let route of this.routes){
+    if( route[this.routeID] == routeId){
+      return route;
+    }
+  }
+}
 
 
 averageFrequency(supplier){ //WORKS
@@ -580,7 +667,6 @@ averageFrequency(supplier){ //WORKS
       return total/20;
     }
   //MANUFACTURING TIME
-
   //PEAK WEEKLY PARTS REQUIRED
   maxQtyWk(part){
       let max = 0;
@@ -603,7 +689,6 @@ averageFrequency(supplier){ //WORKS
     }
   //COST PER PART
   // part[piecePrice]
-
 
   // GAS PRICE PER ROUTE
   gasCost(miles){
@@ -628,19 +713,7 @@ averageFrequency(supplier){ //WORKS
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
   //////////////////////////////////////////////////////////
-
 
   finalSupplierCost(supplier, frequency){ //final cost to be used w/ frequency
     this.floorSpaceArray[this.rowNumber][frequency] = 0;
@@ -675,8 +748,57 @@ averageFrequency(supplier){ //WORKS
     return Math.ceil(supplierCost);
   }
 
-  finalSupplierCostCheck(supplier, frequency){ //final cost to be used w/ frequency
+  MRandCONfinalOriginCost(originID, supplier, frequency){ //final cost to be used w/ frequency
+    this.floorSpaceArray[this.rowNumber][frequency] = 0;
+    this.invHoldingArray[this.rowNumber][frequency] = 0;
+    this.contCapitalArray[this.rowNumber][frequency] = 0;
+    this.supplierCostArray[this.rowNumber][frequency] = 0;
 
+    let supplierCost = 0;
+
+    for(let part of this.parts){
+
+      if(part[this.originID] == originID){
+        supplierCost += this.finalPartCost(part, frequency);//calcs invholding, contcap and floor space
+
+        this.floorSpaceArray[this.rowNumber][frequency] += this.floorSpace(part, frequency);
+        this.invHoldingArray[this.rowNumber][frequency] += this.invHolding(part, frequency);
+        this.contCapitalArray[this.rowNumber][frequency] += this.contCapital(part, frequency);
+        this.supplierCostArray[this.rowNumber][frequency] += this.finalPartCost(part, frequency);
+      }
+    }
+
+    if( frequency == supplier[this.laneFreq]){//if current freq, calc MR freight as % of total MR freight cost
+      if(supplier[this.mode] == "MR"){
+        var freightCost = this.MRcurrentfreight(originID, supplier, frequency) * 49;
+      }
+      else if(supplier[this.mode] == "CON"){
+        var freightCost = this.ODCcurrentFreight(originID, supplier, frequency) * 49;
+      }
+    }
+
+    else{
+      if(supplier[this.mode] == "MR"){
+        var freightCost = this.MRcomparefreight(originID, supplier, frequency) * 49;
+      }
+      else if(supplier[this.mode] == "CON"){
+        var freightCost = this.ODCCompareFreight(originID, supplier, frequency) * 49;
+      }
+    }
+
+    this.freightCostArray[this.rowNumber][frequency] = freightCost;
+
+    supplierCost += freightCost;
+
+    // this.supplierCostArray[this.rowNumber][frequency] = Math.ceil(supplierCost);
+    this.supplierCostArray[this.rowNumber][frequency] = supplierCost;
+
+    return Math.ceil(supplierCost);
+  }
+
+
+
+  finalSupplierCostCheck(supplier, frequency){ //final cost to be used w/ frequency
     let supplierCost = 0;
 
     for(let part of this.parts){
@@ -720,28 +842,16 @@ averageFrequency(supplier){ //WORKS
 
   finalPartCost(part, frequency){
     //console.log("floor: ", this.floorSpace(part, frequency));
-    //     console.log("inv: ", this.invHolding(part, frequency));
-    //        console.log("contCapt: ", this.contCapital(part, frequency));
+         //console.log("inv: ", this.invHolding(part, frequency));
+            // console.log("contCapt: ", this.contCapital(part, frequency));
     let cost = this.floorSpace(part, frequency) + this.invHolding(part, frequency) + this.contCapital(part, frequency);
 
     // this.floorSpaceArray[this.rowNumber][frequency] = this.floorSpace(part, frequency);
     // this.invHoldingArray[this.rowNumber][frequency] = this.invHolding(part, frequency);
     // this.contCapitalArray[this.rowNumber][frequency] = this.contCapital(part, frequency);
 
-
     return cost;
   }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -785,10 +895,6 @@ averageFrequency(supplier){ //WORKS
     let contCapital = containerNum * this.containerPrice(part);
     return contCapital;
   }
-
-
-
-
 
 
 
@@ -883,15 +989,127 @@ averageFrequency(supplier){ //WORKS
   }
 
 
+  MRAverageFrequency(originID, supplier){
+      let freqAry = [];
+      let totalpartFrequency = 0;
+      for(let part of this.parts){
+        if(part[this.originID] == originID){
+          totalpartFrequency = 0;
+          for(let i = 0; i < 20; i++){
+            totalpartFrequency += parseFloat(part[this.lnCube(i)]);
+          }
+          totalpartFrequency = totalpartFrequency/20;
+          freqAry.push(totalpartFrequency);
+        }
+      }
+      let supplierFrequencyTotal = 0;
+      let count = 0;
+      for(let partavgfreq of freqAry){
+        count += 1;
+        supplierFrequencyTotal += partavgfreq;
+      }
+      let averageFrequency = supplierFrequencyTotal / count;
+      return averageFrequency;
+    }
 
 
+    MRcurrentfreight(originID, supplier, frequency){//for current calculation
+        let avgFreq = this.MRAverageFrequency(originID, supplier);
+        let city = "";
+        for( let part of this.parts){
+          if( part[this.originID] == originID){
+            city = part[this.city];
+          }
+        }
+        let dist = this.distances[city];
+        let originCubeMiles = avgFreq * dist;
+
+        let totalCubeMiles = this.averageFrequency(supplier) * parseFloat(supplier[this.miles]);
+
+        let percentCubeMiles = originCubeMiles/totalCubeMiles;
+
+        let MRfreight = this.freight(supplier, frequency) * percentCubeMiles;
+        return MRfreight;
+    }
+
+    MRcomparefreight(originID, supplier, frequency){
+
+      let costPerMile = this.freight(supplier, frequency) / parseFloat(supplier[this.miles]);
+
+      let city = "";
+      for( let part of this.parts){
+        if( part[this.originID] == originID){
+          city = part[this.city];
+        }
+      }
+      let dist = this.distances[city];
+
+      let adjustedFreight = costPerMile * dist;
+
+      if( supplier[this.isRoundTrip] == "Yes"){
+        adjustedFreight *= 2;
+      }
+
+      let MRfreight = adjustedFreight * frequency;
+
+      return MRfreight;
+    }
 
 
+    ODCcurrentFreight(originID, supplier, frequency){
+
+      let wkCubeperOrigin = this.MRAverageFrequency(originID, supplier);
+
+      let city = "";
+      for( let part of this.parts){
+        if( part[this.originID] == originID){
+          city = part[this.city];
+        }
+      }
+      let dist = this.distances_type2[city];
+      if(supplier[this.isRoundTrip] == "Yes"){
+        dist *= 2;
+      }
 
 
+      let suppToODC = dist * wkCubeperOrigin * 1.25 * (100/85);
+
+      let totalCube = this.averageFrequency(supplier);
+
+      let allocationPercentage = wkCubeperOrigin/totalCube;
+
+      let lineHeadCost = allocationPercentage * this.freight(supplier, frequency)//CHECK FOR ANNUAL VS. WEEKLY (*49)
+
+      let CONFreight = lineHeadCost + suppToODC;
+
+      return CONFreight;
+    }
+
+
+    ODCCompareFreight(originID, supplier, frequency){
+      let costPerMile = this.freight(supplier, frequency) / parseFloat(supplier[this.miles]);
+
+      let city = "";
+      for( let part of this.parts){
+        if( part[this.originID] == originID){
+          city = part[this.city];
+        }
+      }
+      let dist = this.supplierToMexico[city];
+
+      let adjustedFreight = costPerMile * dist;
+
+      if( supplier[this.isRoundTrip] == "Yes"){
+        adjustedFreight *= 2;
+      }
+
+      let ODCfreight = adjustedFreight * frequency;//CHECK FOR YEARLY FREQUENCY
+
+      return ODCfreight;
+
+    }
 
     /////////////////////////////// NO UPLOAD POPULATE (FOR TESTING) ///////////
-
 
     populatePartsNoUpload() {
       //console.log("in populateParts...");
@@ -937,9 +1155,7 @@ averageFrequency(supplier){ //WORKS
 
 
 
-
   ///////////////////////////  POPULATE ////////////////////////////////
-
 
 
     populateParts(partsFile, routesFile, containersFile) {
@@ -981,10 +1197,6 @@ averageFrequency(supplier){ //WORKS
   ///////////////////////////   END POPULATE ////////////////////////////////
 
 
-
-
-
-
 distances = {};
 populateDistances(){
   this.distances['QUERETARO'] = 405;
@@ -997,8 +1209,8 @@ populateDistances(){
   this.distances['APODACA'] = 60.8;
   this.distances['PUEBLA'] = 601;
   this.distances['CORREGIDORA'] = 407;
-  this.distances['EL PASO'] = 0;
-  this.distances['El Paso'] = 0;
+  this.distances['EL PASO'] = 1;
+  this.distances['El Paso'] = 1;
 }
 
 
@@ -1174,6 +1386,183 @@ populateDistances_2(){
   this.distances_type2['HUEJOTZINGO'] = 950;
   this.distances_type2['TOLUCA'] = 833;
   this.distances_type2['HAYS'] = 771;
+}
+
+supplierToMexico = {};
+populateSupplierToMexico(){
+  this.supplierToMexico['AUBURN HILLS'] = 2212
+  this.supplierToMexico['CANTON'] = 2147
+  this.supplierToMexico['STERLING HEIGHTS'] = 2201
+  this.supplierToMexico['HOWELL'] = 2157
+  this.supplierToMexico['ROMULUS'] = 2146
+  this.supplierToMexico['CHESTERFIELD'] = 2215
+  this.supplierToMexico['MACOMB'] = 2213
+  this.supplierToMexico['WESTLAND'] = 2152
+  this.supplierToMexico['CLEVELAND'] = 2157
+  this.supplierToMexico['BRIGHTON'] = 2165
+  this.supplierToMexico['HARRISON TOWNSHIP'] = 2210
+  this.supplierToMexico['ROSEVILLE'] = 2200
+  this.supplierToMexico['ARMADA'] = 2231
+  this.supplierToMexico['CORRY'] = 2279
+  this.supplierToMexico['FLINT'] = 2179
+
+  this.supplierToMexico['DETROIT'] = 2189
+  this.supplierToMexico['LAPEER'] = 2199
+  this.supplierToMexico['HOLLAND'] = 2091
+  this.supplierToMexico['STREETSBORO'] = 2158
+  this.supplierToMexico['MCELHATTAN'] = 2383
+  this.supplierToMexico['PLYMOUTH'] = 2166
+  this.supplierToMexico['LIVONIA'] = 2171
+  this.supplierToMexico['CENTER LINE'] = 2196
+  this.supplierToMexico['BRUNSWICK'] = 2135
+  this.supplierToMexico['TROY'] = 2201
+  this.supplierToMexico['PLYMOUTH'] = 2166
+  this.supplierToMexico['WYANDOTTE'] = 2149
+  this.supplierToMexico['PENINSULA'] = 2142
+  this.supplierToMexico['PARMA'] = 2152
+  this.supplierToMexico['LOCKPORT'] = 2363
+  this.supplierToMexico['ROCHESTER'] = 2409
+  this.supplierToMexico['WESTMINSTER'] = 2676
+
+  this.supplierToMexico['WARREN'] = 2198
+  this.supplierToMexico['LAKE ORION'] = 2217
+  this.supplierToMexico['BLISSFIELD'] = 2112
+  this.supplierToMexico['CLARKSTON'] = 2202
+  this.supplierToMexico['NORTHVILLE'] = 2167
+  this.supplierToMexico['UTICA'] = 2204
+  this.supplierToMexico['LAPEER'] = 2199
+  this.supplierToMexico['WESTLAND'] = 2152
+  this.supplierToMexico['TAYLOR'] = 2148
+  this.supplierToMexico['TROY'] = 2201
+  this.supplierToMexico['HUDSON'] = 2148
+  this.supplierToMexico['MADISON HEIGHTS'] = 2191
+  this.supplierToMexico['MILFORD'] = 2540
+  this.supplierToMexico['PORT HURON'] = 2245
+  this.supplierToMexico['BELLEVILLE'] = 2146
+
+  this.supplierToMexico['LAPEER'] = 2199
+  this.supplierToMexico['HOLLY'] = 2191
+  this.supplierToMexico['FOWLERVILLE'] = 2148
+  this.supplierToMexico['DECKERVILLE'] = 2264
+  this.supplierToMexico['Monroe'] = 2124
+  this.supplierToMexico['Imlay City'] = 2212
+  this.supplierToMexico['Fenton'] = 2185
+
+  this.supplierToMexico['BRIGHTON'] = 2165
+  this.supplierToMexico['ROCHESTER'] = 2205
+  this.supplierToMexico['CUYAHOGA HEIGHTS'] = 2153
+  this.supplierToMexico['ROCHESTER HILLS'] = 2199
+  this.supplierToMexico['BELLEVILLE'] = 2146
+  this.supplierToMexico['SHELBY TOWNSHIP'] = 2121
+
+  this.supplierToMexico['CORRY'] = 2279
+  this.supplierToMexico['REDFORD'] = 2174
+  this.supplierToMexico['SANDUSKY'] = 2252
+  this.supplierToMexico['ERIE'] = 2253
+  this.supplierToMexico['Bellevue'] = 2117
+  this.supplierToMexico['BUFFALO'] = 2344
+  this.supplierToMexico['ROMEO'] = 2218
+  this.supplierToMexico['NEW BALTIMORE'] = 2221
+  this.supplierToMexico['PORT HURON'] = 2245
+  this.supplierToMexico['AVON'] = 2143
+
+  this.supplierToMexico['Holly'] = 2191
+  this.supplierToMexico['STRONGSVILLE'] = 2139
+  this.supplierToMexico['LAPEER'] = 2199
+  this.supplierToMexico['ROSEVILLE'] = 2200
+  this.supplierToMexico['HOLLY'] = 2191
+  this.supplierToMexico['Troy'] = 2201
+  this.supplierToMexico['AKRON'] = 2141
+  this.supplierToMexico['East China'] = 2218
+  this.supplierToMexico['HUDSONVILLE'] = 2071
+  this.supplierToMexico['GAYLORD'] = 2255
+  this.supplierToMexico['GOSHEN'] = 2023
+  this.supplierToMexico['ALTO'] = 2100
+  this.supplierToMexico['AU GRES'] = 2267
+  this.supplierToMexico['WALKER'] = 2085
+  this.supplierToMexico['BIG RAPIDS'] = 2140
+  this.supplierToMexico['ZEELAND'] = 2062
+  this.supplierToMexico['WILLIAMSBURG'] = 2218
+  this.supplierToMexico['Grand Rapids'] = 2084
+  this.supplierToMexico['TRAVERSE CITY'] = 2224
+  this.supplierToMexico['GRAND RAPIDS'] =2084
+  this.supplierToMexico['CADILLAC'] = 2178
+  this.supplierToMexico['MASON'] = 2134
+  this.supplierToMexico['Avilla'] = 2017
+  this.supplierToMexico['Oscoda'] = 2303
+  this.supplierToMexico['Litchfield'] = 2078
+  this.supplierToMexico['LITCHFIELD'] = 2078
+  this.supplierToMexico['WAYLAND'] = 2078
+  this.supplierToMexico['Spring Lake'] = 2080
+  this.supplierToMexico['HOLLAND'] = 2057
+  this.supplierToMexico['Butler'] = 2033
+  this.supplierToMexico['IONIA'] = 2120
+  this.supplierToMexico['KENDALLVILLE'] = 2023
+  this.supplierToMexico['FREMONT'] = 2116
+  this.supplierToMexico['ST JOSEPH'] = 2001
+  this.supplierToMexico['BATTLE CREEK'] = 2075
+  this.supplierToMexico['ORLAND'] = 2049
+  this.supplierToMexico['MCALLEN'] = 516
+  this.supplierToMexico['BROWNSVILLE'] = 501
+  this.supplierToMexico['PHARR'] = 513
+  this.supplierToMexico['LAREDO'] = 548
+  this.supplierToMexico['Schertz'] = 723
+  this.supplierToMexico['SAN BENITO'] = 521
+  this.supplierToMexico['LAREDO'] = 548
+  this.supplierToMexico['DEL RIO'] = 669
+  this.supplierToMexico['LAREDO'] = 548
+  this.supplierToMexico['LOS INDIOS'] = 505
+  this.supplierToMexico['BRAMPTON'] = 2414
+  this.supplierToMexico['MARKHAM'] = 2434
+  this.supplierToMexico['KITCHENER'] = 2375
+  this.supplierToMexico['BURLINGTON'] = 2395
+  this.supplierToMexico['Penetanguishene'] = 2497
+  this.supplierToMexico['LONDON'] = 2310
+  this.supplierToMexico['WOODBRIDGE'] = 2418
+  this.supplierToMexico['BRAMPTON'] = 2414
+  this.supplierToMexico['Cambridge'] = 2369
+  this.supplierToMexico['STONEY CREEK'] = 2396
+  this.supplierToMexico['TOTTENHAM'] = 2438
+  this.supplierToMexico['RICHMOND'] = 2823
+  this.supplierToMexico['SCARBOROUGH'] = 2399
+  this.supplierToMexico['WINDSOR'] = 2190
+  this.supplierToMexico['WHITBY'] = 2458
+  this.supplierToMexico['MISSISSAUGA'] = 2414
+  this.supplierToMexico['ST CATHARINES'] = 2375
+  this.supplierToMexico['RICHMOND HILL'] = 2431
+  this.supplierToMexico['Ridgetown'] = 2222
+  this.supplierToMexico['TILLSONBURG'] = 2344
+  this.supplierToMexico['Ayr'] = 2362
+  this.supplierToMexico['INGERSOLL'] = 2333
+  this.supplierToMexico['ETOBICOKE'] = 2423
+  this.supplierToMexico['WOODBRIDGE'] = 2418
+  this.supplierToMexico['Waterloo'] = 2378
+  this.supplierToMexico['OWEN SOUND'] = 2403
+  this.supplierToMexico['Bradford'] = 2446
+  this.supplierToMexico['CONCORD'] = 2423
+  this.supplierToMexico['BELLEVILLE'] = 2146
+  this.supplierToMexico['BRADFORD'] = 2446
+  this.supplierToMexico['Concord'] = 2423
+  this.supplierToMexico['HAMILTON'] =
+  this.supplierToMexico['WATFORD'] = 2276
+  this.supplierToMexico['SAN LUIS POTOSI'] = 105
+  this.supplierToMexico['Silao'] = 1
+  this.supplierToMexico['HOLLAND'] = 2091
+  this.supplierToMexico['EL PASO'] = 925
+  this.supplierToMexico['NOGALES'] = 1122
+  this.supplierToMexico['CIUDAD JUAREZ'] = 914
+  this.supplierToMexico['SALTILLO'] = 370
+  this.supplierToMexico['CHIHUAHUA'] = 685
+  this.supplierToMexico['MEOQUI'] = 639
+  this.supplierToMexico['SALTILLO'] = 370
+  this.supplierToMexico['MATAMOROS'] = 498
+  this.supplierToMexico['SANTA CATARINA'] = 403
+  this.supplierToMexico['Fort Worth'] = 969
+  this.supplierToMexico['PUEBLA'] = 286
+  this.supplierToMexico['HUEJOTZINGO'] = 276
+  this.supplierToMexico['TOLUCA'] = 203
+  this.supplierToMexico['HAYS'] = 1505
+
 }
 
 }
