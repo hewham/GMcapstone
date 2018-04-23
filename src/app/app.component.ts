@@ -148,12 +148,12 @@ test(){
     this.routeIndex = i;
     this.selectedIndex = 2;
     this.totalsDict = {};
-    var currentFreq = this.outputMatrix[i][2];
-    var bestFreq = this.outputMatrix[i][4];
+    var currentFreq = this.outputMatrix[i][3];
+    var bestFreq = this.outputMatrix[i][5];
     this.freqArray = [];
     var j = 0;
     for(let entry of this.outputMatrix[i]){
-      if((j%3)==1 && j!=1 ){
+      if((j%3)==2 && j!=2 ){
         if(entry == currentFreq){
           // this.selectedFreq = entry;
         }
@@ -172,12 +172,11 @@ test(){
       }
       k++;
     }
-    this.routeFreightCostDict = this.freightCostDict[this.outputMatrix[i][0]];
-    this.routeFloorSpaceDict = this.floorSpaceDict[this.outputMatrix[i][0]];
-    this.routeInvHoldingDict = this.invHoldingDict[this.outputMatrix[i][0]];
-    this.routeContCapitalDict = this.contCapitalDict[this.outputMatrix[i][0]];
-    this.routeContCapitalDict = this.contCapitalDict[this.outputMatrix[i][0]];
-    this.routeSupplierCostDict = this.supplierCostDict[this.outputMatrix[i][0]];
+    this.routeFreightCostDict = this.freightCostDict[this.outputMatrix[i][1]];
+    this.routeFloorSpaceDict = this.floorSpaceDict[this.outputMatrix[i][1]];
+    this.routeInvHoldingDict = this.invHoldingDict[this.outputMatrix[i][1]];
+    this.routeContCapitalDict = this.contCapitalDict[this.outputMatrix[i][1]];
+    this.routeSupplierCostDict = this.supplierCostDict[this.outputMatrix[i][1]];
 
     this.originalFreqArray = [];
     this.freqArrayLength = 0;
@@ -326,8 +325,6 @@ test(){
 
 
   main() {
-    // console.log("using fuelrate: ",this.fuelRate);
-    //console.log("In main()...");
     // console.log("PARTS: ",this.parts);
     //console.log("ROUTES: ",this.routes);
     //console.log("CONTAINERS: ",this.containers);
@@ -374,7 +371,7 @@ test(){
   //for(let supplier of this.routes){
 for(let origin in this.originIdDict){
     let supplier = this.routeFromOriginId(origin);
-    console.log(supplier);
+    // console.log(supplier);
     if(supplier == undefined){
       continue;
     }
@@ -389,170 +386,146 @@ for(let origin in this.originIdDict){
     let bestCost = 0;
     let bestFreq = 0;
 
+    let frequencyRangeDict = {};
+    let frequencyRangeAry = [];
+
         if (supplier[this.mode] == "TL" || supplier[this.mode] == "ITL"){
-            this.freightCostArray.push({});
-            this.floorSpaceArray.push({});
-            this.invHoldingArray.push({});
-            this.contCapitalArray.push({});
-            this.supplierCostArray.push({});
+                    this.freightCostArray.push({});
+                    this.floorSpaceArray.push({});
+                    this.invHoldingArray.push({});
+                    this.contCapitalArray.push({});
+                    this.supplierCostArray.push({});
 
-            pushRow.push(supplier[this.routeID]); //routeID
-            originalFrequency = supplier[this.laneFreq];
+                    pushRow.push(supplier[this.routeID]); //routeID
+                    pushRow.push(origin); //originID
 
-            currentCost = this.finalSupplierCost(supplier, supplier[this.laneFreq]);
-            if(isNaN(currentCost)){
-              this.incompleteDataSuppliers.push(supplier[this.routeID]);
-              //continue;
-            }
-            pushRow.push(currentCost); //Original Cost
-            pushRow.push(originalFrequency); //Original Frequency
-            let frequencyRangeDict = {};
-            let frequencyRangeAry = [];
+                    originalFrequency = supplier[this.laneFreq];
 
-            avgFreq = Math.ceil(this.averageFrequency(supplier));
-            if( avgFreq < originalFrequency){
-              let temp = avgFreq;
-              avgFreq = originalFrequency;
-              originalFrequency = temp;
-            }
-            for(let i = originalFrequency; i <= avgFreq; i++){
-              frequencyRangeDict[(this.finalSupplierCost(supplier, i))] = i;
-              frequencyRangeAry.push(this.finalSupplierCost(supplier, i));
-            }
+                    currentCost = this.finalSupplierCost(supplier, supplier[this.laneFreq]);
+                    if(isNaN(currentCost)){
+                      this.incompleteDataSuppliers.push(supplier[this.routeID]);
+                      //continue;
+                    }
+                    pushRow.push(currentCost); //Original Cost
+                    pushRow.push(originalFrequency); //Original Frequency
 
-            frequencyRangeAry = frequencyRangeAry.sort(function(a, b){return b - a});
 
-            for(let j = 0; j<100; j++){
-              if(frequencyRangeAry.length > 0){
-                let minCost = frequencyRangeAry.pop();
-                let minFreq = frequencyRangeDict[minCost];
-                pushRow.push(minCost); //Minimum Cost
-                pushRow.push(minFreq); //Minimum frequency
-                let costDiff = currentCost - minCost;
-                pushRow.push(costDiff);  //Cost Difference
-              }
-              else{
-                pushRow.push("");
-                pushRow.push("");
-                pushRow.push("");
-              }
-            }
+                    avgFreq = Math.ceil(this.averageFrequency(supplier));
+                    if( avgFreq < originalFrequency){
+                      let temp = avgFreq;
+                      avgFreq = originalFrequency;
+                      originalFrequency = temp;
+                    }
+                    for(let i = originalFrequency; i <= avgFreq; i++){
+                      frequencyRangeDict[(this.finalSupplierCost(supplier, i))] = i;
+                      frequencyRangeAry.push(this.finalSupplierCost(supplier, i));
+                    }
 
-            this.outputMatrix.push(pushRow);
-            this.rowNumber++;
+
         }
 
         else if (supplier[this.mode] == "MR"){
-          console.log("in MR else if w/ supplier and origin:", supplier, origin);
-          this.freightCostArray.push({});
-          this.floorSpaceArray.push({});
-          this.invHoldingArray.push({});
-          this.contCapitalArray.push({});
-          this.supplierCostArray.push({});
+                    // console.log("in MR else if w/ supplier and origin:", supplier, origin);
+                    this.freightCostArray.push({});
+                    this.floorSpaceArray.push({});
+                    this.invHoldingArray.push({});
+                    this.contCapitalArray.push({});
+                    this.supplierCostArray.push({});
 
-          pushRow.push(supplier[this.routeID]); //routeID
-          //pushRow.push(origin);
-          originalFrequency = supplier[this.laneFreq];
+                    pushRow.push(supplier[this.routeID]); //routeID
+                    pushRow.push(origin); //originID
 
-          currentCost = this.MRandCONfinalOriginCost(origin, supplier, supplier[this.laneFreq]);
-          if(isNaN(currentCost)){
-            this.incompleteDataSuppliers.push(supplier[this.routeID]);
-            continue;
-          }
-          pushRow.push(currentCost); //Original Cost
-          pushRow.push(originalFrequency); //Original Frequency
-          let frequencyRangeDict = {};
-          let frequencyRangeAry = [];
+                    originalFrequency = supplier[this.laneFreq];
 
-          avgFreq = Math.ceil(this.averageFrequency(supplier));///////ASK JAKE ABOUT WHICH AVG FREQUENCY IT SHOULD BE, THIS OR MR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          if( avgFreq < originalFrequency){
-            let temp = avgFreq;
-            avgFreq = originalFrequency;
-            originalFrequency = temp;
-          }
-          for(let i = originalFrequency; i <= avgFreq; i++){
-            frequencyRangeDict[(this.MRandCONfinalOriginCost(origin, supplier, i))] = i;
-            frequencyRangeAry.push(this.MRandCONfinalOriginCost(origin, supplier, i));
-          }
+                    currentCost = this.MRandCONfinalOriginCost(origin, supplier, supplier[this.laneFreq]);
+                    if(isNaN(currentCost)){
+                      this.incompleteDataSuppliers.push(supplier[this.routeID]);
+                      continue;
+                    }
+                    pushRow.push(currentCost); //Original Cost
+                    pushRow.push(originalFrequency); //Original Frequency
+                    // let frequencyRangeDict = {};
+                    // let frequencyRangeAry = [];
 
-          frequencyRangeAry = frequencyRangeAry.sort(function(a, b){return b - a});
+                    avgFreq = Math.ceil(this.averageFrequency(supplier));///////ASK JAKE ABOUT WHICH AVG FREQUENCY IT SHOULD BE, THIS OR MR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    if( avgFreq < originalFrequency){
+                      let temp = avgFreq;
+                      avgFreq = originalFrequency;
+                      originalFrequency = temp;
+                    }
+                    for(let i = originalFrequency; i <= avgFreq; i++){
+                      frequencyRangeDict[(this.MRandCONfinalOriginCost(origin, supplier, i))] = i;
+                      frequencyRangeAry.push(this.MRandCONfinalOriginCost(origin, supplier, i));
+                    }
 
-          for(let j = 0; j<100; j++){
-            if(frequencyRangeAry.length > 0){
-              let minCost = frequencyRangeAry.pop();
-              let minFreq = frequencyRangeDict[minCost];
-              pushRow.push(minCost); //Minimum Cost
-              pushRow.push(minFreq); //Minimum frequency
-              let costDiff = currentCost - minCost;
-              pushRow.push(costDiff);  //Cost Difference
-            }
-            else{
-              pushRow.push("");
-              pushRow.push("");
-              pushRow.push("");
-            }
-          }
 
-          this.outputMatrix.push(pushRow);
-          this.rowNumber++;
         }
         else if (supplier[this.mode] == "CON"){
-          console.log("in CON else if w/ supplier and origin:", supplier, origin);
-          this.freightCostArray.push({});
-          this.floorSpaceArray.push({});
-          this.invHoldingArray.push({});
-          this.contCapitalArray.push({});
-          this.supplierCostArray.push({});
+                    // console.log("in CON else if w/ supplier and origin:", supplier, origin);
+                    this.freightCostArray.push({});
+                    this.floorSpaceArray.push({});
+                    this.invHoldingArray.push({});
+                    this.contCapitalArray.push({});
+                    this.supplierCostArray.push({});
 
-          pushRow.push(supplier[this.routeID]); //routeID
-          //pushRow.push(origin);
-          originalFrequency = supplier[this.laneFreq];
+                    pushRow.push(supplier[this.routeID]); //routeID
+                    pushRow.push(origin); //originID
 
-          currentCost = this.MRandCONfinalOriginCost(origin, supplier, supplier[this.laneFreq]);
-          if(isNaN(currentCost)){
-            this.incompleteDataSuppliers.push(supplier[this.routeID]);
-            continue;
-          }
-          pushRow.push(currentCost); //Original Cost
-          pushRow.push(originalFrequency); //Original Frequency
-          let frequencyRangeDict = {};
-          let frequencyRangeAry = [];
+                    originalFrequency = supplier[this.laneFreq];
 
-          avgFreq = Math.ceil(this.averageFrequency(supplier));///////ASK JAKE ABOUT WHICH AVG FREQUENCY IT SHOULD BE, THIS OR MR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          if( avgFreq < originalFrequency){
-            let temp = avgFreq;
-            avgFreq = originalFrequency;
-            originalFrequency = temp;
-          }
-          for(let i = originalFrequency; i <= avgFreq; i++){
-            frequencyRangeDict[(this.MRandCONfinalOriginCost(origin, supplier, i))] = i;
-            frequencyRangeAry.push(this.MRandCONfinalOriginCost(origin, supplier, i));
-          }
+                    currentCost = this.MRandCONfinalOriginCost(origin, supplier, supplier[this.laneFreq]);
+                    if(isNaN(currentCost)){
+                      this.incompleteDataSuppliers.push(supplier[this.routeID]);
+                      continue;
+                    }
+                    pushRow.push(currentCost); //Original Cost
+                    pushRow.push(originalFrequency); //Original Frequency
+                    // let frequencyRangeDict = {};
+                    // let frequencyRangeAry = [];
 
-          frequencyRangeAry = frequencyRangeAry.sort(function(a, b){return b - a});
+                    avgFreq = Math.ceil(this.averageFrequency(supplier));///////ASK JAKE ABOUT WHICH AVG FREQUENCY IT SHOULD BE, THIS OR MR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    if( avgFreq < originalFrequency){
+                      let temp = avgFreq;
+                      avgFreq = originalFrequency;
+                      originalFrequency = temp;
+                    }
+                    for(let i = originalFrequency; i <= avgFreq; i++){
+                      frequencyRangeDict[(this.MRandCONfinalOriginCost(origin, supplier, i))] = i;
+                      frequencyRangeAry.push(this.MRandCONfinalOriginCost(origin, supplier, i));
+                    }
 
-          for(let j = 0; j<100; j++){
-            if(frequencyRangeAry.length > 0){
-              let minCost = frequencyRangeAry.pop();
-              let minFreq = frequencyRangeDict[minCost];
-              pushRow.push(minCost); //Minimum Cost
-              pushRow.push(minFreq); //Minimum frequency
-              let costDiff = currentCost - minCost;
-              pushRow.push(costDiff);  //Cost Difference
-            }
-            else{
-              pushRow.push("");
-              pushRow.push("");
-              pushRow.push("");
-            }
-          }
 
-          this.outputMatrix.push(pushRow);
-          this.rowNumber++;
         }
+
+        frequencyRangeAry = frequencyRangeAry.sort(function(a, b){return b - a});
+
+        for(let j = 0; j<frequencyRangeAry.length; j++){
+          if(frequencyRangeAry.length > 0){
+            let minCost = frequencyRangeAry.pop();
+            let minFreq = frequencyRangeDict[minCost];
+            pushRow.push(minCost); //Minimum Cost
+            pushRow.push(minFreq); //Minimum frequency
+            let costDiff = currentCost - minCost;
+            pushRow.push(costDiff);  //Cost Difference
+          }
+          else{
+            pushRow.push("");
+            pushRow.push("");
+            pushRow.push("");
+          }
+        }
+
+        this.outputMatrix.push(pushRow);
+        this.rowNumber++;
     }
 
   this.trueMatrix = this.outputMatrix;
+  console.log("this.outputMatrix");
+  console.log(this.outputMatrix);
+  console.log("this.freightCostDict");
+  console.log(this.freightCostDict);
+  console.log("this.contCapitalDict");
+  console.log(this.contCapitalDict);
 
   this.calculateTotals();
   this.populateDicts();
@@ -566,11 +539,11 @@ for(let origin in this.originIdDict){
 populateDicts(){
   var i = 0;
   for (let row of this.outputMatrix){
-    this.freightCostDict[row[0]] = this.freightCostArray[i];
-    this.floorSpaceDict[row[0]] = this.floorSpaceArray[i];
-    this.invHoldingDict[row[0]] = this.invHoldingArray[i];
-    this.contCapitalDict[row[0]] = this.contCapitalArray[i];
-    this.supplierCostDict[row[0]] = this.supplierCostArray[i];
+    this.freightCostDict[row[1]] = this.freightCostArray[i];
+    this.floorSpaceDict[row[1]] = this.floorSpaceArray[i];
+    this.invHoldingDict[row[1]] = this.invHoldingArray[i];
+    this.contCapitalDict[row[1]] = this.contCapitalArray[i];
+    this.supplierCostDict[row[1]] = this.supplierCostArray[i];
     i++;
   }
 }
@@ -644,6 +617,99 @@ routeFromOriginId(originId){
   }
 }
 
+
+
+  //////////////////////////////////////////////////////////
+
+  finalSupplierCost(supplier, frequency){ //final cost to be used w/ frequency
+    this.floorSpaceArray[this.rowNumber][frequency] = 0;
+    this.invHoldingArray[this.rowNumber][frequency] = 0;
+    this.contCapitalArray[this.rowNumber][frequency] = 0;
+    this.supplierCostArray[this.rowNumber][frequency] = 0;
+
+    let supplierCost = 0;
+
+    for(let part of this.parts){
+
+      if(part[this.routeID] == supplier[this.routeID]){
+        supplierCost += this.finalPartCost(part, frequency);
+
+        this.floorSpaceArray[this.rowNumber][frequency] += this.floorSpace(part, frequency);
+        this.invHoldingArray[this.rowNumber][frequency] += this.invHolding(part, frequency);
+        this.contCapitalArray[this.rowNumber][frequency] += this.contCapital(part, frequency);
+        this.supplierCostArray[this.rowNumber][frequency] += this.finalPartCost(part, frequency);
+      }
+    }
+    var freightCost = this.freight(supplier, frequency) * 49;
+
+    this.freightCostArray[this.rowNumber][frequency] = freightCost;
+
+    supplierCost += freightCost;
+
+
+
+    // this.supplierCostArray[this.rowNumber][frequency] = Math.ceil(supplierCost);
+    this.supplierCostArray[this.rowNumber][frequency] = supplierCost;
+
+    return Math.ceil(supplierCost);
+  }
+
+  MRandCONfinalOriginCost(originID, supplier, frequency){ //final cost to be used w/ frequency
+    this.floorSpaceArray[this.rowNumber][frequency] = 0;
+    this.invHoldingArray[this.rowNumber][frequency] = 0;
+    this.contCapitalArray[this.rowNumber][frequency] = 0;
+    this.supplierCostArray[this.rowNumber][frequency] = 0;
+
+    let supplierCost = 0;
+
+    for(let part of this.parts){
+
+      if(part[this.originID] == originID){
+        supplierCost += this.finalPartCost(part, frequency);//calcs invholding, contcap and floor space
+
+        this.floorSpaceArray[this.rowNumber][frequency] += this.floorSpace(part, frequency);
+        this.invHoldingArray[this.rowNumber][frequency] += this.invHolding(part, frequency);
+        this.contCapitalArray[this.rowNumber][frequency] += this.contCapital(part, frequency);
+        this.supplierCostArray[this.rowNumber][frequency] += this.finalPartCost(part, frequency);
+      }
+    }
+
+    if( frequency == supplier[this.laneFreq]){//if current freq, calc MR freight as % of total MR freight cost
+      if(supplier[this.mode] == "MR"){
+        var freightCost = this.MRcurrentfreight(originID, supplier, frequency) * 49;
+      }
+      else if(supplier[this.mode] == "CON"){
+        var freightCost = this.ODCcurrentFreight(originID, supplier, frequency) * 49;
+      }
+    }
+
+    else{
+      if(supplier[this.mode] == "MR"){
+        var freightCost = this.MRcomparefreight(originID, supplier, frequency) * 49;
+      }
+      else if(supplier[this.mode] == "CON"){
+        var freightCost = this.ODCCompareFreight(originID, supplier, frequency) * 49;
+      }
+    }
+
+    this.freightCostArray[this.rowNumber][frequency] = freightCost;
+
+    supplierCost += freightCost;
+
+    this.supplierCostArray[this.rowNumber][frequency] = supplierCost;
+
+    return Math.ceil(supplierCost);
+  }
+
+
+  finalPartCost(part, frequency){
+    let cost = this.floorSpace(part, frequency) + this.invHolding(part, frequency) + this.contCapital(part, frequency);
+
+    return cost;
+  }
+
+
+/////////////////////////////////////////////////////////////////////////
 
 averageFrequency(supplier){ //WORKS
   let freqAry = [];
@@ -746,148 +812,6 @@ averageFrequency(supplier){ //WORKS
     }
     return 0;
   }
-
-
-  //////////////////////////////////////////////////////////
-
-  finalSupplierCost(supplier, frequency){ //final cost to be used w/ frequency
-    this.floorSpaceArray[this.rowNumber][frequency] = 0;
-    this.invHoldingArray[this.rowNumber][frequency] = 0;
-    this.contCapitalArray[this.rowNumber][frequency] = 0;
-    this.supplierCostArray[this.rowNumber][frequency] = 0;
-
-    let supplierCost = 0;
-
-    for(let part of this.parts){
-
-      if(part[this.routeID] == supplier[this.routeID]){
-        supplierCost += this.finalPartCost(part, frequency);
-
-        this.floorSpaceArray[this.rowNumber][frequency] += this.floorSpace(part, frequency);
-        this.invHoldingArray[this.rowNumber][frequency] += this.invHolding(part, frequency);
-        this.contCapitalArray[this.rowNumber][frequency] += this.contCapital(part, frequency);
-        this.supplierCostArray[this.rowNumber][frequency] += this.finalPartCost(part, frequency);
-      }
-    }
-    var freightCost = this.freight(supplier, frequency) * 49;
-
-    this.freightCostArray[this.rowNumber][frequency] = freightCost;
-
-    supplierCost += freightCost;
-
-
-
-    // this.supplierCostArray[this.rowNumber][frequency] = Math.ceil(supplierCost);
-    this.supplierCostArray[this.rowNumber][frequency] = supplierCost;
-
-    return Math.ceil(supplierCost);
-  }
-
-  MRandCONfinalOriginCost(originID, supplier, frequency){ //final cost to be used w/ frequency
-    this.floorSpaceArray[this.rowNumber][frequency] = 0;
-    this.invHoldingArray[this.rowNumber][frequency] = 0;
-    this.contCapitalArray[this.rowNumber][frequency] = 0;
-    this.supplierCostArray[this.rowNumber][frequency] = 0;
-
-    let supplierCost = 0;
-
-    for(let part of this.parts){
-
-      if(part[this.originID] == originID){
-        supplierCost += this.finalPartCost(part, frequency);//calcs invholding, contcap and floor space
-
-        this.floorSpaceArray[this.rowNumber][frequency] += this.floorSpace(part, frequency);
-        this.invHoldingArray[this.rowNumber][frequency] += this.invHolding(part, frequency);
-        this.contCapitalArray[this.rowNumber][frequency] += this.contCapital(part, frequency);
-        this.supplierCostArray[this.rowNumber][frequency] += this.finalPartCost(part, frequency);
-      }
-    }
-
-    if( frequency == supplier[this.laneFreq]){//if current freq, calc MR freight as % of total MR freight cost
-      if(supplier[this.mode] == "MR"){
-        var freightCost = this.MRcurrentfreight(originID, supplier, frequency) * 49;
-      }
-      else if(supplier[this.mode] == "CON"){
-        var freightCost = this.ODCcurrentFreight(originID, supplier, frequency) * 49;
-      }
-    }
-
-    else{
-      if(supplier[this.mode] == "MR"){
-        var freightCost = this.MRcomparefreight(originID, supplier, frequency) * 49;
-      }
-      else if(supplier[this.mode] == "CON"){
-        var freightCost = this.ODCCompareFreight(originID, supplier, frequency) * 49;
-      }
-    }
-
-    this.freightCostArray[this.rowNumber][frequency] = freightCost;
-
-    supplierCost += freightCost;
-
-    // this.supplierCostArray[this.rowNumber][frequency] = Math.ceil(supplierCost);
-    this.supplierCostArray[this.rowNumber][frequency] = supplierCost;
-
-    return Math.ceil(supplierCost);
-  }
-
-
-
-  finalSupplierCostCheck(supplier, frequency){ //final cost to be used w/ frequency
-    let supplierCost = 0;
-
-    for(let part of this.parts){
-
-      if(part[this.routeID] == supplier[this.routeID]){
-        supplierCost += this.finalPartCost(part, frequency);
-
-        if(!this.floorSpaceArray[this.rowNumber][frequency]){
-          this.floorSpaceArray[this.rowNumber][frequency] = 0; }
-        if(!this.invHoldingArray[this.rowNumber][frequency]){
-          this.invHoldingArray[this.rowNumber][frequency] = 0; }
-        if(!this.contCapitalArray[this.rowNumber][frequency]){
-          this.contCapitalArray[this.rowNumber][frequency] = 0; }
-        if(!this.supplierCostArray[this.rowNumber][frequency]){
-          this.supplierCostArray[this.rowNumber][frequency] = 0; }
-
-        this.floorSpaceArray[this.rowNumber][frequency] += this.floorSpace(part, frequency);
-        this.invHoldingArray[this.rowNumber][frequency] += this.invHolding(part, frequency);
-        this.contCapitalArray[this.rowNumber][frequency] += this.contCapital(part, frequency);
-        this.supplierCostArray[this.rowNumber][frequency] += this.finalPartCost(part, frequency);
-      }
-    }
-    var freightCost = this.freight(supplier, frequency);
-
-    this.freightCostArray[this.rowNumber][frequency] = freightCost;
-
-    supplierCost += freightCost;
-
-    if(supplier[this.routeID] == "MCM07A"){
-      console.log("");
-      console.log(supplierCost);
-      console.log(this.rowNumber);
-      console.log(frequency);
-    }
-
-    // this.supplierCostArray[this.rowNumber][frequency] = Math.ceil(supplierCost);
-    this.supplierCostArray[this.rowNumber][frequency] = supplierCost;
-
-    return Math.ceil(supplierCost);
-  }
-
-  finalPartCost(part, frequency){
-    //console.log("floor: ", this.floorSpace(part, frequency));
-         //console.log("inv: ", this.invHolding(part, frequency));
-            // console.log("contCapt: ", this.contCapital(part, frequency));
-    let cost = this.floorSpace(part, frequency) + this.invHolding(part, frequency) + this.contCapital(part, frequency);
-
-    // this.floorSpaceArray[this.rowNumber][frequency] = this.floorSpace(part, frequency);
-    // this.invHoldingArray[this.rowNumber][frequency] = this.invHolding(part, frequency);
-    // this.contCapitalArray[this.rowNumber][frequency] = this.contCapital(part, frequency);
-
-    return cost;
-  }
-
 
 
   ////////////////////////////////// 4 MAIN COST CALCULATIONS ////////////////////////////////

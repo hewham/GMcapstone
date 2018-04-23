@@ -81,52 +81,53 @@
     <p *ngIf="showSavings==2" (click)="changeShowSavings(0)">Cost savings (3rd best): <span *ngIf="totals[2] > 0" style="color:green">{{totals[2] | currency}}</span><span *ngIf="totals[2] <= 0" style="color:red">{{totals[2] | currency}}</span></p>
 
     <table>
-      <tr> <th class="zeroth">Ref #</th> <th class="zeroth">Route ID</th> <th class="zeroth">Current Cost</th> <th class="zeroth">Current $ Frequency</th> <th class="firstth">Lowest Cost</th> <th class="firstth">Lowest $ Frequency</th> <th class="firstth">Cost Difference</th> <th class="secondth">2nd Lowest Cost</th>
+      <tr> <th class="zeroth">Ref #</th> <th class="zeroth">Route ID</th> <th class="zeroth">Origin ID</th> <th class="zeroth">Current Cost</th> <th class="zeroth">Current $ Frequency</th> <th class="firstth">Lowest Cost</th> <th class="firstth">Lowest $ Frequency</th> <th class="firstth">Cost Difference</th> <th class="secondth">2nd Lowest Cost</th>
         <th class="secondth">2nd Lowest $ Frequency</th> <th class="secondth">2nd Cost Difference</th> <th class="thirdth">3rd Lowest Cost</th> <th class="thirdth">3rd Lowest $ Frequency</th> <th class="thirdth">3rd Cost Difference</th></tr>
 
       <tr *ngFor="let row of outputMatrix, let i = index" (click)="showRouteDetails(i)">
         <td>{{i+1}}</td>
         <td>{{row[0]}}</td>
-        <td>{{row[1] | currency:0}}</td>
-        <td>{{row[2]}}</td>
-        <td class="border-left">{{row[3] | currency}}</td>
-        <td>{{row[4]}}</td>
+        <td>{{row[1]}}</td>
+        <td>{{row[2] | currency:0}}</td>
+        <td>{{row[3]}}</td>
+        <td class="border-left">{{row[4] | currency}}</td>
+        <td>{{row[5]}}</td>
         <td>
-          <div *ngIf="row[3] < row[1]" style="color:green">
-            {{row[5] | currency}}
+          <div *ngIf="row[4] < row[2]" style="color:green">
+            {{row[6] | currency}}
           </div>
-          <div *ngIf="row[3] > row[1]" style="color:red">
-            {{row[5] | currency}}
+          <div *ngIf="row[4] > row[2]" style="color:red">
+            {{row[6] | currency}}
           </div>
-          <div *ngIf="row[3] == row[1]" style="color:grey">
+          <div *ngIf="row[4] == row[2]" style="color:grey">
             $0
           </div>
         </td>
 
-        <td class="border-left">{{row[6] | currency}}</td>
-        <td>{{row[7]}}</td>
+        <td class="border-left">{{row[7] | currency}}</td>
+        <td>{{row[8]}}</td>
         <td>
-          <div *ngIf="row[6] < row[1]" style="color:green">
-            {{row[8] | currency}}
+          <div *ngIf="row[7] < row[2]" style="color:green">
+            {{row[9] | currency}}
           </div>
-          <div *ngIf="row[6] > row[1]" style="color:red">
-            {{row[8] | currency}}
+          <div *ngIf="row[7] > row[2]" style="color:red">
+            {{row[9] | currency}}
           </div>
-          <div *ngIf="row[6] == row[1]" style="color:grey">
+          <div *ngIf="row[7] == row[2]" style="color:grey">
             $0
           </div>
         </td>
 
-        <td class="border-left">{{row[9] | currency}}</td>
-        <td>{{row[10]}}</td>
+        <td class="border-left">{{row[10] | currency}}</td>
+        <td>{{row[11]}}</td>
         <td>
-          <div *ngIf="row[9] < row[1]" style="color:green">
-            {{row[11] | currency}}
+          <div *ngIf="row[10] < row[2]" style="color:green">
+            {{row[12] | currency}}
           </div>
-          <div *ngIf="row[9] > row[1]" style="color:red">
-            {{row[11] | currency}}
+          <div *ngIf="row[10] > row[2]" style="color:red">
+            {{row[12] | currency}}
           </div>
-          <div *ngIf="row[9] == row[1]" style="color:grey">
+          <div *ngIf="row[10] == row[2]" style="color:grey">
             $0
           </div>
         </td>
@@ -145,7 +146,7 @@
   <div *ngIf="routeDetail">
     <div style="text-align:center">
       <h2>Route: {{outputMatrix[routeIndex][0]}}</h2>
-      <h3>Origin: {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][0]][city]}}, {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][0]][state]}}</h3>
+      <h3>Origin: {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][1]][city]}}, {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][1]][state]}} ({{outputMatrix[routeIndex][1]}})</h3>
       <br />
       <h3>Frequency</h3>
       <h5>Currently Used: ({{currentFreq}})   |   Best Possible: ({{bestFreq}})  |  Currently Selected ({{selectedFreq}}), Rank: {{freqRank}}/{{freqArrayLength}}</h5>
