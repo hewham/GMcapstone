@@ -13,7 +13,7 @@ export class AppComponent {
 // Papa = require("papaparse");
 Papa: any;
 
-fuelRate = 2.559;
+fuelRate = 2.56;
 routesLegend = []
 partsLegend = []
 containersLegend = []
@@ -181,13 +181,26 @@ test(){
     this.originalFreqArray = [];
     this.freqArrayLength = 0;
     for (let freq of this.freqArray){
-      this.totalsDict[freq] = this.routeFreightCostDict[freq] + this.routeFloorSpaceDict[freq] + this.routeInvHoldingDict[freq] + this.routeContCapitalDict[freq];
+      this.totalsDict[freq] = 0;
+      if(!isNaN(parseFloat(this.routeFreightCostDict[freq]))){
+        this.totalsDict[freq] += parseFloat(this.routeFreightCostDict[freq]);
+      }
+      if(!isNaN(parseFloat(this.routeFloorSpaceDict[freq]))){
+        this.totalsDict[freq] += parseFloat(this.routeFloorSpaceDict[freq]);
+      }
+      if(!isNaN(parseFloat(this.routeInvHoldingDict[freq]))){
+        this.totalsDict[freq] += parseFloat(this.routeInvHoldingDict[freq]);
+      }
+      if(!isNaN(parseFloat(this.routeContCapitalDict[freq]))){
+        this.totalsDict[freq] += parseFloat(this.routeContCapitalDict[freq]);
+      }
       this.originalFreqArray.push(freq);
       if(!isNaN(freq)){
         console.log("freq NaN: ",freq);
         this.freqArrayLength += 1;
       }
     }
+
 
     this.freqRank = 1;
 
@@ -519,13 +532,16 @@ for(let origin in this.originIdDict){
         this.rowNumber++;
     }
 
-  this.trueMatrix = this.outputMatrix;
-  console.log("this.outputMatrix");
-  console.log(this.outputMatrix);
-  console.log("this.freightCostDict");
-  console.log(this.freightCostDict);
-  console.log("this.contCapitalDict");
-  console.log(this.contCapitalDict);
+  this.trueMatrix = [];
+  for(let row of this.outputMatrix){
+    this.trueMatrix.push(row);
+  }
+  // console.log("this.outputMatrix");
+  // console.log(this.outputMatrix);
+  // console.log("this.freightCostDict");
+  // console.log(this.freightCostDict);
+  // console.log("this.contCapitalDict");
+  // console.log(this.contCapitalDict);
 
   this.calculateTotals();
   this.populateDicts();
@@ -555,12 +571,14 @@ calculateTotals(){
   var t3=0;
   this.totals = [];
   for(let row of this.trueMatrix){
-    t1 += parseFloat(row[5]);
-    if(!isNaN(parseFloat(row[8]))){
-      t2 += parseFloat(row[8]);
+    if(!isNaN(parseFloat(row[6]))){
+      t1 += parseFloat(row[6]);
     }
-    if(!isNaN(parseFloat(row[11]))){
-      t3 += parseFloat(row[11]);
+    if(!isNaN(parseFloat(row[9]))){
+      t2 += parseFloat(row[9]);
+    }
+    if(!isNaN(parseFloat(row[12]))){
+      t3 += parseFloat(row[12]);
     }
   }
 
@@ -571,33 +589,46 @@ calculateTotals(){
 
 
 unSortByDifference() {
-  this.outputMatrix = this.trueMatrix;
+  this.outputMatrix = [];
+  for(let row of this.trueMatrix){
+    this.outputMatrix.push(row);
+  }
   this.sorted = false;
 }
 
 sortByDifference() {
-  let temp = [];
-  let tempTrue = [];
-  for(let row of this.trueMatrix){
-    tempTrue.push(row);
-  }
-  for(let rowi of tempTrue){
-    let max = rowi;
-    let j = 0;
-    let index = 0;
-    for(let rowj of tempTrue){
-      if(rowj[5] > max[5]){
-        max = rowj;
-        index = j;
-      }
-      j++;
-    }
-    temp.push(max);
-    tempTrue.splice(index,1);
-  }
-  this.outputMatrix = temp;
+  this.outputMatrix.sort(function(a, b) {
+    return a[6] < b[6] ? 1 : -1;
+  });
   this.sorted = true;
 }
+
+// sortByDifference() {
+//   let temp = [];
+//   let tempTrue = [];
+//   for(let row of this.trueMatrix){
+//     tempTrue.push(row);
+//   }
+//   let i = 0;
+//   for(let rowi of tempTrue){
+//     let max = tempTrue[i];
+//     let j = i+1;
+//     let index = 0;
+//     for(let rowj of tempTrue){
+//       if(rowj[6] > max[6]){
+//         max = rowj;
+//         index = j;
+//       }
+//       j++;
+//     }
+//     temp.push(max);
+//     tempTrue.splice(index,1);
+//     tempTrue.unshift(max);
+//     i++;
+//   }
+//   this.outputMatrix = temp;
+//   this.sorted = true;
+// }
 
 originIdDict = {};
 populateOriginIdDict(){
