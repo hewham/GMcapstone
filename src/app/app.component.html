@@ -80,14 +80,15 @@
     <p *ngIf="showSavings==1" (click)="changeShowSavings(2)">Cost savings (2nd best): <span *ngIf="totals[1] > 0" style="color:green">{{totals[1] | currency}}</span><span *ngIf="totals[1] <= 0" style="color:red">{{totals[1] | currency}}</span></p>
     <p *ngIf="showSavings==2" (click)="changeShowSavings(0)">Cost savings (3rd best): <span *ngIf="totals[2] > 0" style="color:green">{{totals[2] | currency}}</span><span *ngIf="totals[2] <= 0" style="color:red">{{totals[2] | currency}}</span></p>
 
-    <table>
-      <tr> <th class="zeroth">Ref #</th> <th class="zeroth">Route ID</th> <th class="zeroth">Origin ID</th> <th class="zeroth">Current Cost</th> <th class="zeroth">Current $ Frequency</th> <th class="firstth">Lowest Cost</th> <th class="firstth">Lowest $ Frequency</th> <th class="firstth">Cost Difference</th> <th class="secondth">2nd Lowest Cost</th>
+    <table class="main-table">
+      <tr> <th class="zeroth">Ref #</th> <th class="zeroth">Route ID</th> <th class="zeroth">Origin ID</th> <th class="zeroth">Mode</th> <th class="zeroth">Current Cost</th> <th class="zeroth">Current $ Frequency</th> <th class="firstth">Lowest Cost</th> <th class="firstth">Lowest $ Frequency</th> <th class="firstth">Cost Difference</th> <th class="secondth">2nd Lowest Cost</th>
         <th class="secondth">2nd Lowest $ Frequency</th> <th class="secondth">2nd Cost Difference</th> <th class="thirdth">3rd Lowest Cost</th> <th class="thirdth">3rd Lowest $ Frequency</th> <th class="thirdth">3rd Cost Difference</th></tr>
 
       <tr *ngFor="let row of outputMatrix, let i = index" (click)="showRouteDetails(i)">
         <td>{{i+1}}</td>
         <td>{{row[0]}}</td>
         <td>{{row[1]}}</td>
+        <td>{{routeIDtoModeDict[row[0]]}}</td>
         <td>{{row[2] | currency:0}}</td>
         <td>{{row[3]}}</td>
         <td class="border-left">{{row[4] | currency}}</td>

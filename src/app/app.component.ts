@@ -282,6 +282,7 @@ test(){
     //console.log("ROUTES: ",this.routes);
     //console.log("CONTAINERS: ",this.containers);
     this.populateDistances();
+    this.populateModeDict();
     this.populateSupplierToMexico();
     this.populateDistances_2();
     this.populateOriginIdDict();
@@ -463,7 +464,7 @@ for(let origin in this.originIdDict){
 
         for(let j = 0; j<frequencyRangeAry.length; j++){
           if(frequencyRangeAry.length > 0){
-            let minCost = frequencyRangeAry.pop();
+            let minCost = frequencyRangeAry[frequencyRangeAry.length-j-1];
             let minFreq = frequencyRangeDict[minCost];
             pushRow.push(minCost); //Minimum Cost
             pushRow.push(minFreq); //Minimum frequency
@@ -485,12 +486,6 @@ for(let origin in this.originIdDict){
   for(let row of this.outputMatrix){
     this.trueMatrix.push(row);
   }
-  // console.log("this.outputMatrix");
-  // console.log(this.outputMatrix);
-  // console.log("this.freightCostDict");
-  // console.log(this.freightCostDict);
-  // console.log("this.contCapitalDict");
-  // console.log(this.contCapitalDict);
 
   this.calculateTotals();
   this.populateDicts();
@@ -562,6 +557,13 @@ populateOriginIdDict(){
   }
 }
 
+routeIDtoModeDict = {};
+populateModeDict(){
+  for(let route of this.routes){
+    this.routeIDtoModeDict[route[this.routeID]] = route[this.mode];
+  }
+}
+
 routeFromOriginId(originId){
   let routeId =  this.originIdDict[originId];
   for( let route of this.routes){
@@ -581,36 +583,27 @@ routeFromOriginId(originId){
 
 
   showRouteDetails(i){
-
-        var contains = function(needle) {
-            // Per spec, the way to identify NaN is that it is not equal to itself
-            var findNaN = needle !== needle;
-            var indexOf;
-
-            if(!findNaN && typeof Array.prototype.indexOf === 'function') {
-                indexOf = Array.prototype.indexOf;
-            } else {
-                indexOf = function(needle) {
-                    var i = -1, index = -1;
-
-                    for(i = 0; i < this.length; i++) {
-                        var item = this[i];
-
-                        if((findNaN && item !== item) || item === needle) {
-                            index = i;
-                            break;
-                        }
-                    }
-
-                    return index;
-                };
-            }
-
-            return indexOf.call(this, needle) > -1;
-        };
-
-
-
+      var contains = function(needle) {
+          // Per spec, the way to identify NaN is that it is not equal to itself
+          var findNaN = needle !== needle;
+          var indexOf;
+          if(!findNaN && typeof Array.prototype.indexOf === 'function') {
+              indexOf = Array.prototype.indexOf;
+          } else {
+              indexOf = function(needle) {
+                  var i = -1, index = -1;
+                  for(i = 0; i < this.length; i++) {
+                      var item = this[i];
+                      if((findNaN && item !== item) || item === needle) {
+                          index = i;
+                          break;
+                      }
+                  }
+                  return index;
+              };
+          }
+          return indexOf.call(this, needle) > -1;
+      };
 
 
     this.routeIndex = i;
@@ -621,15 +614,14 @@ routeFromOriginId(originId){
     this.freqArray = [];
     var j = 0;
     var extra;
+
+    console.log(this.outputMatrix[i]);
+
     for(let entry of this.outputMatrix[i]){
       if(((j%3)==2 && j!=2) || j==3){
-        if(entry == currentFreq){
-          // this.selectedFreq = entry;
-        }
         if(entry == bestFreq){
           this.selectedFreq = entry;
         }
-
         if(j!=3){
           this.freqArray.push(parseInt(entry));
         }else{
@@ -678,21 +670,16 @@ routeFromOriginId(originId){
         this.freqArrayLength += 1;
       }
     }
-
-
     this.freqRank = 1;
-
     this.currentFreq = currentFreq;
     this.bestFreq = bestFreq;
     this.routeDetail = true;
-
-
   }
 
 
 
 
-  //////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
 
   finalSupplierCost(supplier, frequency){ //final cost to be used w/ frequency
     this.floorSpaceArray[this.rowNumber][frequency] = 0;
