@@ -145,111 +145,48 @@ test(){
     this.routeDetail = false;
   }
 
-  showRouteDetails(i){
-    this.routeIndex = i;
-    this.selectedIndex = 2;
-    this.totalsDict = {};
-    var currentFreq = this.outputMatrix[i][3];
-    var bestFreq = this.outputMatrix[i][5];
-    this.freqArray = [];
-    var j = 0;
-    for(let entry of this.outputMatrix[i]){
-      if((j%3)==2 && j!=2 ){
-        if(entry == currentFreq){
-          // this.selectedFreq = entry;
+    changeShowSavings(num){
+      this.showSavings = num;
+    }
+
+
+    clickedFreq(freq, i){
+      this.selectedFreq = freq;
+      this.selectedIndex = i;
+      let j = 1;
+      for(let checkFreq of this.originalFreqArray){
+        if(freq == checkFreq){
+          break;
         }
-        if(entry == bestFreq){
-          this.selectedFreq = entry;
-        }
-        this.freqArray.push(entry);
-        this.totalsDict[entry] = [];
+        j++;
       }
-      j++;
+      this.freqRank = j;
+      console.log(this.freqRank);
     }
-    var k = 0;
-    for(let freq of this.freqArray){
-      if(freq == this.selectedFreq){
-        this.selectedIndex = k;
-      }
-      k++;
-    }
-    this.routeFreightCostDict = this.freightCostDict[this.outputMatrix[i][1]];
-    this.routeFloorSpaceDict = this.floorSpaceDict[this.outputMatrix[i][1]];
-    this.routeInvHoldingDict = this.invHoldingDict[this.outputMatrix[i][1]];
-    this.routeContCapitalDict = this.contCapitalDict[this.outputMatrix[i][1]];
-    this.routeSupplierCostDict = this.supplierCostDict[this.outputMatrix[i][1]];
 
-    this.originalFreqArray = [];
-    this.freqArrayLength = 0;
-    for (let freq of this.freqArray){
-      this.totalsDict[freq] = 0;
-      if(!isNaN(parseFloat(this.routeFreightCostDict[freq]))){
-        this.totalsDict[freq] += parseFloat(this.routeFreightCostDict[freq]);
+    sortFreqArray(){
+      this.freqArray.sort((a, b) => a - b);
+      this.freqSorted = true;
+    }
+
+    unSortFreqArray(){
+      this.freqArray = [];
+      for(let freq of this.originalFreqArray){
+        this.freqArray.push(freq);
       }
-      if(!isNaN(parseFloat(this.routeFloorSpaceDict[freq]))){
-        this.totalsDict[freq] += parseFloat(this.routeFloorSpaceDict[freq]);
-      }
-      if(!isNaN(parseFloat(this.routeInvHoldingDict[freq]))){
-        this.totalsDict[freq] += parseFloat(this.routeInvHoldingDict[freq]);
-      }
-      if(!isNaN(parseFloat(this.routeContCapitalDict[freq]))){
-        this.totalsDict[freq] += parseFloat(this.routeContCapitalDict[freq]);
-      }
-      this.originalFreqArray.push(freq);
-      if(!isNaN(freq)){
-        console.log("freq NaN: ",freq);
-        this.freqArrayLength += 1;
+      this.freqSorted = false;
+    }
+
+    isNaN(num){
+      if(isNaN(parseInt(num)) == false){
+        return true;
+      }else{
+        return false;
       }
     }
 
 
-    this.freqRank = 1;
 
-    this.currentFreq = currentFreq;
-    this.bestFreq = bestFreq;
-    this.routeDetail = true;
-
-  }
-
-  changeShowSavings(num){
-    this.showSavings = num;
-  }
-
-
-  clickedFreq(freq, i){
-    this.selectedFreq = freq;
-    this.selectedIndex = i;
-    let j = 1;
-    for(let checkFreq of this.originalFreqArray){
-      if(freq == checkFreq){
-        break;
-      }
-      j++;
-    }
-    this.freqRank = j;
-    console.log(this.freqRank);
-  }
-
-  sortFreqArray(){
-    this.freqArray.sort((a, b) => a - b);
-    this.freqSorted = true;
-  }
-
-  unSortFreqArray(){
-    this.freqArray = [];
-    for(let freq of this.originalFreqArray){
-      this.freqArray.push(freq);
-    }
-    this.freqSorted = false;
-  }
-
-  isNaN(num){
-    if(isNaN(parseInt(num)) == false){
-      return true;
-    }else{
-      return false;
-    }
-  }
 
 
 
@@ -336,6 +273,8 @@ test(){
       this.populateParts(partsFile.files[0], routesFile.files[0], containersFile.files[0]);
     }
   }
+
+
 
 
   main() {
@@ -613,32 +552,6 @@ sortByDifference() {
   this.sorted = true;
 }
 
-// sortByDifference() {
-//   let temp = [];
-//   let tempTrue = [];
-//   for(let row of this.trueMatrix){
-//     tempTrue.push(row);
-//   }
-//   let i = 0;
-//   for(let rowi of tempTrue){
-//     let max = tempTrue[i];
-//     let j = i+1;
-//     let index = 0;
-//     for(let rowj of tempTrue){
-//       if(rowj[6] > max[6]){
-//         max = rowj;
-//         index = j;
-//       }
-//       j++;
-//     }
-//     temp.push(max);
-//     tempTrue.splice(index,1);
-//     tempTrue.unshift(max);
-//     i++;
-//   }
-//   this.outputMatrix = temp;
-//   this.sorted = true;
-// }
 
 originIdDict = {};
 populateOriginIdDict(){
@@ -657,6 +570,125 @@ routeFromOriginId(originId){
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+  showRouteDetails(i){
+
+        var contains = function(needle) {
+            // Per spec, the way to identify NaN is that it is not equal to itself
+            var findNaN = needle !== needle;
+            var indexOf;
+
+            if(!findNaN && typeof Array.prototype.indexOf === 'function') {
+                indexOf = Array.prototype.indexOf;
+            } else {
+                indexOf = function(needle) {
+                    var i = -1, index = -1;
+
+                    for(i = 0; i < this.length; i++) {
+                        var item = this[i];
+
+                        if((findNaN && item !== item) || item === needle) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    return index;
+                };
+            }
+
+            return indexOf.call(this, needle) > -1;
+        };
+
+
+
+
+
+    this.routeIndex = i;
+    this.selectedIndex = 2;
+    this.totalsDict = {};
+    var currentFreq = this.outputMatrix[i][3];
+    var bestFreq = this.outputMatrix[i][5];
+    this.freqArray = [];
+    var j = 0;
+    var extra;
+    for(let entry of this.outputMatrix[i]){
+      if(((j%3)==2 && j!=2) || j==3){
+        if(entry == currentFreq){
+          // this.selectedFreq = entry;
+        }
+        if(entry == bestFreq){
+          this.selectedFreq = entry;
+        }
+
+        if(j!=3){
+          this.freqArray.push(parseInt(entry));
+        }else{
+          extra = parseInt(entry);
+        }
+        this.totalsDict[entry] = [];
+      }
+      j++;
+    }
+    if(!(contains.call(this.freqArray, extra))){
+      this.freqArray.push(extra);
+    }
+
+    var k = 0;
+    for(let freq of this.freqArray){
+      if(freq == this.selectedFreq){
+        this.selectedIndex = k;
+      }
+      k++;
+    }
+    this.routeFreightCostDict = this.freightCostDict[this.outputMatrix[i][1]];
+    this.routeFloorSpaceDict = this.floorSpaceDict[this.outputMatrix[i][1]];
+    this.routeInvHoldingDict = this.invHoldingDict[this.outputMatrix[i][1]];
+    this.routeContCapitalDict = this.contCapitalDict[this.outputMatrix[i][1]];
+    this.routeSupplierCostDict = this.supplierCostDict[this.outputMatrix[i][1]];
+
+    this.originalFreqArray = [];
+    this.freqArrayLength = 0;
+    for (let freq of this.freqArray){
+      this.totalsDict[freq] = 0;
+      if(!isNaN(parseFloat(this.routeFreightCostDict[freq]))){
+        this.totalsDict[freq] += parseFloat(this.routeFreightCostDict[freq]);
+      }
+      if(!isNaN(parseFloat(this.routeFloorSpaceDict[freq]))){
+        this.totalsDict[freq] += parseFloat(this.routeFloorSpaceDict[freq]);
+      }
+      if(!isNaN(parseFloat(this.routeInvHoldingDict[freq]))){
+        this.totalsDict[freq] += parseFloat(this.routeInvHoldingDict[freq]);
+      }
+      if(!isNaN(parseFloat(this.routeContCapitalDict[freq]))){
+        this.totalsDict[freq] += parseFloat(this.routeContCapitalDict[freq]);
+      }
+      this.originalFreqArray.push(freq);
+      if(!isNaN(freq)){
+        console.log("freq NaN: ",freq);
+        this.freqArrayLength += 1;
+      }
+    }
+
+
+    this.freqRank = 1;
+
+    this.currentFreq = currentFreq;
+    this.bestFreq = bestFreq;
+    this.routeDetail = true;
+
+
+  }
+
 
 
 
@@ -1600,7 +1632,7 @@ populateSupplierToMexico(){
   this.supplierToMexico['Tuscumbia'] = 1573
   this.supplierToMexico['Clinton'] = 1773
   this.supplierToMexico['Fletcher'] = 1829
-  this.supplierToMexico['BOWLING GREEN'] = 1700 
+  this.supplierToMexico['BOWLING GREEN'] = 1700
   this.supplierToMexico['Stanfield'] = 1915
   this.supplierToMexico['Athens'] = 1713
   this.supplierToMexico['Pulaski'] = 1633

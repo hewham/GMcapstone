@@ -133,3 +133,7 @@ tr:hover {background-color: gainsboro;}
 .sort-text{
   color: #073980;
 }
+
+.freq-details{
+  font-size: 0.8em !important;
+}

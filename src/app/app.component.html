@@ -146,10 +146,10 @@
   <div *ngIf="routeDetail">
     <div style="text-align:center">
       <h2><span style="color:grey">Route:</span> {{outputMatrix[routeIndex][0]}}<span style="color:grey">&nbsp;&nbsp;|&nbsp;&nbsp;Origin: </span> {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][1]][city]}}, {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][1]][state]}} ({{outputMatrix[routeIndex][1]}})</h2>
-      <!-- <h3>Origin: {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][1]][city]}}, {{partDict[routeIDtoPartIDDict[outputMatrix[routeIndex][0]][1]][state]}} ({{outputMatrix[routeIndex][1]}})</h3> -->
+
       <br />
-      <h3>Frequency</h3>
-      <h5>Currently Used: (<span style="color:#073980">{{currentFreq}}</span>)   |   Best Possible: (<span style="color:#073980">{{bestFreq}}</span>)  |  Currently Selected (<span style="color:#073980">{{selectedFreq}}</span>), Rank: <span style="color:#073980">{{freqRank}}</span>/{{freqArrayLength}}</h5>
+      <!-- <h3>Frequency</h3> -->
+      <h3><span style="color:grey">Frequency:</span><span class="freq-details"> Currently Used: (<span style="color:#073980">{{currentFreq}}</span>)   <span style="color:grey">|</span>   Best Possible: (<span style="color:#073980">{{bestFreq}}</span>)  <span style="color:grey">|</span>  Currently Selected (<span style="color:#073980">{{selectedFreq}}</span>), <span style="color:grey">Rank:</span> <span style="color:#073980">{{freqRank}}</span>/{{freqArrayLength}}</span></h3>
       <h6 class="sort-text" *ngIf="!freqSorted" (click)="sortFreqArray()"><u>Sort Numerically</u></h6>
       <h6 class="sort-text" *ngIf="freqSorted" (click)="unSortFreqArray()"><u>Sort By Cost Savings</u></h6>
       <div class="freq-numbers">
@@ -162,7 +162,7 @@
 
     <br />
     <table>
-      <th class="zeroth"> </th><th class="zeroth">Current ({{currentFreq}})</th><th class="firstth">Selected ({{selectedFreq}})</th><th class="secondth">difference</th>
+      <th class="zeroth"> </th><th class="zeroth">Current ({{currentFreq}})</th><th class="firstth">Selected ({{selectedFreq}})</th><th class="secondth">Difference</th>
       <tr>
         <td>Freight Cost</td>
         <td><span *ngIf="routeFreightCostDict[currentFreq]">{{routeFreightCostDict[currentFreq] | currency}}</span><span *ngIf="!routeFreightCostDict[currentFreq]">N/A</span>
@@ -260,7 +260,7 @@
       </tr>
 
       <tr>
-        <td>Totals</td>
+        <td><b>Totals</b></td>
         <td><span *ngIf="totalsDict[currentFreq]">{{totalsDict[currentFreq] | currency}}</span><span *ngIf="!totalsDict[currentFreq]">N/A</span>
         </td>
         <td><span *ngIf="totalsDict[selectedFreq]"><b>{{totalsDict[selectedFreq] | currency}}</b></span><span *ngIf="!totalsDict[selectedFreq]"><b>N/A</b></span>
