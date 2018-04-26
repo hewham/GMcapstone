@@ -791,7 +791,7 @@ averageFrequency(supplier){ //WORKS
     count += 1;
     supplierFrequencyTotal += partavgfreq;
   }
-  let averageFrequency = supplierFrequencyTotal / count;
+  let averageFrequency = supplierFrequencyTotal;
   return averageFrequency;
 }
 
